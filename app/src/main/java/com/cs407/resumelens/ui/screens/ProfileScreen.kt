@@ -1,6 +1,5 @@
 package com.cs407.resumelens.ui.screens
 
-import com.cs407.resumelens.R.drawable
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -18,7 +17,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.cs407.resumelens.R
 
-
 @Composable
 fun ProfileScreen() {
     Column(
@@ -27,29 +25,32 @@ fun ProfileScreen() {
             .background(Color.White)
             .padding(horizontal = 24.dp, vertical = 16.dp)
     ) {
-        // Top bar
         Row(
-            Modifier.fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
             Icon(
                 painter = painterResource(id = R.drawable.back_button),
                 contentDescription = "Back",
-                tint = Color.Black
+                tint = Color.Black,
+                modifier = Modifier.size(28.dp)
             )
             Icon(
                 painter = painterResource(id = R.drawable.settings_icon),
                 contentDescription = "Settings",
-                tint = Color.Black
+                tint = Color.Black,
+                modifier = Modifier.size(28.dp)
             )
         }
 
-        Spacer(Modifier.height(20.dp))
+        Spacer(Modifier.height(24.dp))
 
-        // Profile Info
-        Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
-            Box {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Box(contentAlignment = Alignment.BottomEnd) {
                 Image(
                     painter = painterResource(id = R.drawable.default_profile_pic),
                     contentDescription = "Profile picture",
@@ -62,25 +63,23 @@ fun ProfileScreen() {
                     contentDescription = "Premium",
                     tint = Color.Gray,
                     modifier = Modifier
-                        .align(Alignment.TopEnd)
-                        .size(20.dp)
+                        .size(18.dp)
+                        .offset(x = 4.dp, y = 4.dp)
                 )
             }
             Spacer(Modifier.height(8.dp))
             Text("Brittany Dinan", fontWeight = FontWeight.Bold, fontSize = 20.sp)
-            Text("Premium account", color = Color.Gray)
+            Text("Premium account", color = Color.Gray, fontSize = 14.sp)
         }
 
         Spacer(Modifier.height(24.dp))
 
-        // Info fields
         InfoItem("Email", "email@email.com")
         InfoItem("Phone", "(+123) 000 111 222 333")
         InfoItem("Location", "New York, USA")
 
         Spacer(Modifier.height(24.dp))
 
-        // Achievements section
         Text("Achievements", fontWeight = FontWeight.Bold, fontSize = 18.sp)
         Spacer(Modifier.height(12.dp))
         Column(
@@ -91,7 +90,11 @@ fun ProfileScreen() {
                 .padding(16.dp)
         ) {
             Text("Quantified Impact", fontWeight = FontWeight.SemiBold)
-            Text("Add measurable results to 5+ bullet points", color = Color.Gray, fontSize = 14.sp)
+            Text(
+                "Add measurable results to 5+ bullet points",
+                color = Color.Gray,
+                fontSize = 14.sp
+            )
             Spacer(Modifier.height(8.dp))
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text("Progress", color = Color.Gray, fontSize = 12.sp)
