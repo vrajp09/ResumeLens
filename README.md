@@ -1,5 +1,4 @@
-**ResumeLens — Team Roles & Weekly Project Structure
-**
+**ResumeLens — Team Roles & Weekly Project Structure**
 This document outlines team roles, meeting responsibilities, task assignments, and initial project structure for Week 1 of the ResumeLens development cycle.
 
 ResumeLens is a mobile-first AI tool that scans and evaluates resumes to highlight weak phrasing, suggest improvements, and optimize for ATS systems . 
