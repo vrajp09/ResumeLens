@@ -26,7 +26,8 @@ import androidx.compose.ui.unit.sp
 import com.cs407.resumelens.R
 import com.cs407.resumelens.ui.theme.ResumeLensTheme
 
-
+// Citation- https://developer.android.com/develop/ui/compose/components/app-bars
+// Citation- https://stackoverflow.com/questions/72437945/rounded-corner-only-at-top-of-image-aysncimage-coil
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PolishResumeScreen(
@@ -57,7 +58,6 @@ fun PolishResumeScreen(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
 
-            // Title
             Text(
                 "Let's Polish your Resume!",
                 fontWeight = FontWeight.Bold,
@@ -68,7 +68,6 @@ fun PolishResumeScreen(
 
             Spacer(Modifier.height(30.dp))
 
-            // Upload Box
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -114,16 +113,17 @@ fun PolishResumeScreen(
             Spacer(Modifier.height(20.dp))
 
             // Open Camera button (static for now)
+            // Citation- https://stuff.mit.edu/afs/sipb/project/android/docs/guide/topics/ui/controls/button.html
             Button(
                 onClick = onContinue,
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFCCF6E3)), // minty green background
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFCCF6E3)),
                 shape = RoundedCornerShape(14.dp),
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(54.dp)
             ) {
                 Icon(
-                    painter = painterResource(id = R.drawable.profile_logo), // replace with a camera icon later
+                    painter = painterResource(id = R.drawable.profile_logo), // replace with camera icon later
                     contentDescription = "Camera",
                     tint = Color(0xFF00B67A),
                     modifier = Modifier.size(20.dp)

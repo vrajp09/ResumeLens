@@ -53,6 +53,9 @@ fun DashboardScreen() {
 
             Spacer(Modifier.height(12.dp))
 
+
+            //Citation- https://github.com/developerchunk/BarGraph-JetpackCompose
+            // Citation- https://stackoverflow.com/questions/66955541/create-list-of-lists-in-ktlin
             Row(
                 horizontalArrangement = Arrangement.spacedBy(6.dp),
                 verticalAlignment = Alignment.Bottom,
