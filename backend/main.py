@@ -19,7 +19,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-@app.get("/")
+@app.get("/root_health_check")
 def root_health_check():
     return {"Message": "Backend is healthy."}
 

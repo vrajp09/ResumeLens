@@ -20,7 +20,7 @@ async def extract_resume_text(file: UploadFile = File(...)):
         
         extracted_text = res.full_text_annotation.text.strip()
         if not extracted_text:
-            raise HTTPException(status_code=400, detail="No text found in the image.")
+            raise HTTPException(status_code=400, detail="No text could be extracted from the image. Please try again.")
         
         return {"extracted_text": extracted_text}
     
