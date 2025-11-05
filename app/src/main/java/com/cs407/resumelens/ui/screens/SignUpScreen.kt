@@ -29,7 +29,7 @@ import com.cs407.resumelens.R
 @Composable
 fun SignUpScreen(
     onBack: () -> Unit,
-    onSignUpComplete: () -> Unit
+    onSignUpComplete: (email: String, password: String) -> Unit
 ) {
     var fullName by rememberSaveable { mutableStateOf("") }
     var email by rememberSaveable { mutableStateOf("") }
@@ -37,6 +37,7 @@ fun SignUpScreen(
     var password by rememberSaveable { mutableStateOf("") }
     var repeatPassword by rememberSaveable { mutableStateOf("") }
     var showPassword by rememberSaveable { mutableStateOf(false) }
+    var localError by remember { mutableStateOf<String?>(null) }
 
     Column(
         modifier = Modifier
@@ -139,7 +140,14 @@ fun SignUpScreen(
                 password == repeatPassword
 
         Button(
-            onClick = onSignUpComplete,
+            onClick = {
+                if (password != repeatPassword) {
+                    localError = "Passwords do not match"
+                } else {
+                    localError = null
+                    onSignUpComplete(email, password)
+                }
+            },
             enabled = enabled,
             modifier = Modifier
                 .fillMaxWidth()
