@@ -23,6 +23,7 @@ import androidx.compose.ui.unit.sp
 import com.cs407.resumelens.R
 import com.cs407.resumelens.ui.theme.ResumeLensTheme
 
+// Citation- https://developer.android.com/reference/kotlin/androidx/compose/foundation/layout/Arrangement
 @Composable
 fun ResumeAnalysisScreen(
     onBack: () -> Unit = {}
@@ -33,7 +34,6 @@ fun ResumeAnalysisScreen(
             .padding(horizontal = 24.dp, vertical = 16.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // Back Button
         Row(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
@@ -55,7 +55,6 @@ fun ResumeAnalysisScreen(
 
         Spacer(modifier = Modifier.height(40.dp))
 
-        // Center illustration
         Image(
             painter = painterResource(id = R.drawable.resume_icon),
             contentDescription = "Resume Icon",
@@ -73,7 +72,6 @@ fun ResumeAnalysisScreen(
 
         Spacer(modifier = Modifier.height(32.dp))
 
-        // Score Circles
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceEvenly
@@ -85,7 +83,6 @@ fun ResumeAnalysisScreen(
 
         Spacer(modifier = Modifier.height(48.dp))
 
-        // Improve Score Button
         Button(
             onClick = { /* navigate later */ },
             modifier = Modifier
