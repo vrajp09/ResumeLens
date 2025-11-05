@@ -61,4 +61,7 @@ dependencies {
     debugImplementation(libs.androidx.compose.ui.test.manifest)
     implementation(platform("com.google.firebase:firebase-bom:34.4.0"))
     implementation("com.google.firebase:firebase-auth")
+    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.6")
+    implementation("androidx.lifecycle:lifecycle-runtime-compose:2.8.6")
+    implementation("androidx.compose.material:material-icons-extended")
 }
