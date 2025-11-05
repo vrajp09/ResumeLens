@@ -71,119 +71,120 @@ fun LogInScreen(
         }
     }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .verticalScroll(rememberScrollState())
-            .padding(horizontal = 24.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Image(
-            painter = painterResource(R.drawable.header),
-            contentDescription = null,
-            contentScale = ContentScale.Crop,
+
+        Column(
             modifier = Modifier
-                .fillMaxWidth()
-                .height(180.dp)
-                .padding(top = 8.dp)
-        )
-
-        Spacer(Modifier.height(16.dp))
-
-        Text("Log in", fontSize = 28.sp)
-        Text(
-            "Enter your details to continue",
-            style = MaterialTheme.typography.bodyMedium,
-            textAlign = TextAlign.Center
-        )
-
-        Spacer(Modifier.height(20.dp))
-
-        // Error from ViewModel
-        if (errorText != null) {
-            Text(errorText, color = MaterialTheme.colorScheme.error)
-            Spacer(Modifier.height(8.dp))
-            // clear after first draw so it doesn't persist on config change
-            LaunchedEffect(errorText) { onClearError() }
-        }
-
-        OutlinedTextField(
-            value = email,
-            onValueChange = { email = it },
-            label = { Text("Enter your email") },
-            singleLine = true,
-            isError = emailError != null,
-            supportingText = {
-                if (emailError != null) {
-                    // If the error is “No account…”, show a Sign up action
-                    if (emailError.startsWith("No account", ignoreCase = true)) {
-                        Row {
-                            Text(emailError, color = MaterialTheme.colorScheme.error)
-                            Spacer(Modifier.width(8.dp))
-                            TextButton(onClick = onGoToSignUp) { Text("Sign up") }
-                        }
-                    } else {
-                        Text(emailError, color = MaterialTheme.colorScheme.error)
-                    }
-                }
-            },
-            modifier = Modifier.fillMaxWidth()
-        )
-
-        Spacer(Modifier.height(12.dp))
-
-        OutlinedTextField(
-            value = password,
-            onValueChange = { password = it },
-            label = { Text("Enter your password") },
-            trailingIcon = {
-                TextButton(onClick = { showPassword = !showPassword }) {
-                    Text(if (showPassword) "Hide" else "Show")
-                }
-            },
-            singleLine = true,
-            isError = passwordError != null,
-            supportingText = {
-                if (passwordError != null) {
-                    Text(passwordError, color = MaterialTheme.colorScheme.error)
-                }
-            },
-            visualTransformation = if (showPassword) VisualTransformation.None else PasswordVisualTransformation(),
-            modifier = Modifier.fillMaxWidth()
-        )
-
-        Spacer(Modifier.height(8.dp))
-
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = 24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Checkbox(checked = rememberMe, onCheckedChange = { rememberMe = it })
-                Text("Remember me")
+            Image(
+                painter = painterResource(R.drawable.header),
+                contentDescription = null,
+                contentScale = ContentScale.Crop,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(180.dp)
+                    .padding(top = 8.dp)
+            )
+
+            Spacer(Modifier.height(16.dp))
+
+            Text("Log in", fontSize = 28.sp)
+            Text(
+                "Enter your details to continue",
+                style = MaterialTheme.typography.bodyMedium,
+                textAlign = TextAlign.Center
+            )
+
+            Spacer(Modifier.height(20.dp))
+
+            // Error from ViewModel
+            if (errorText != null) {
+                Text(errorText, color = MaterialTheme.colorScheme.error)
+                Spacer(Modifier.height(8.dp))
+                // clear after first draw so it doesn't persist on config change
+                LaunchedEffect(errorText) { onClearError() }
             }
-            TextButton(onClick = onRecoverPassword) { Text("Recover password") }
+
+            OutlinedTextField(
+                value = email,
+                onValueChange = { email = it },
+                label = { Text("Enter your email") },
+                singleLine = true,
+                isError = emailError != null,
+                supportingText = {
+                    if (emailError != null) {
+                        // If the error is “No account…”, show a Sign up action
+                        if (emailError.startsWith("No account", ignoreCase = true)) {
+                            Row {
+                                Text(emailError, color = MaterialTheme.colorScheme.error)
+                                Spacer(Modifier.width(8.dp))
+                                TextButton(onClick = onGoToSignUp) { Text("Sign up") }
+                            }
+                        } else {
+                            Text(emailError, color = MaterialTheme.colorScheme.error)
+                        }
+                    }
+                },
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            Spacer(Modifier.height(12.dp))
+
+            OutlinedTextField(
+                value = password,
+                onValueChange = { password = it },
+                label = { Text("Enter your password") },
+                trailingIcon = {
+                    TextButton(onClick = { showPassword = !showPassword }) {
+                        Text(if (showPassword) "Hide" else "Show")
+                    }
+                },
+                singleLine = true,
+                isError = passwordError != null,
+                supportingText = {
+                    if (passwordError != null) {
+                        Text(passwordError, color = MaterialTheme.colorScheme.error)
+                    }
+                },
+                visualTransformation = if (showPassword) VisualTransformation.None else PasswordVisualTransformation(),
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            Spacer(Modifier.height(8.dp))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Checkbox(checked = rememberMe, onCheckedChange = { rememberMe = it })
+                    Text("Remember me")
+                }
+                TextButton(onClick = onRecoverPassword) { Text("Recover password") }
+            }
+
+            Spacer(Modifier.height(10.dp))
+
+            val enabled = email.isNotBlank() && password.isNotBlank()
+            Button(
+                onClick = {
+                    onClearError()
+                    onLogIn(email, password)
+                },
+                enabled = enabled,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(56.dp),
+                shape = RoundedCornerShape(14.dp)
+            ) { Text("Log in") }
+
+            Spacer(Modifier.height(12.dp))
+            TextButton(onClick = onBack) { Text("Back") }
+
+            Spacer(Modifier.height(18.dp))
         }
-
-        Spacer(Modifier.height(10.dp))
-
-        val enabled = email.isNotBlank() && password.isNotBlank()
-        Button(
-            onClick = {
-                onClearError()
-                onLogIn(email, password)
-            },
-            enabled = enabled,
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(56.dp),
-            shape = RoundedCornerShape(14.dp)
-        ) { Text("Log in") }
-
-        Spacer(Modifier.height(12.dp))
-        TextButton(onClick = onBack) { Text("Back") }
-
-        Spacer(Modifier.height(18.dp))
     }
-}

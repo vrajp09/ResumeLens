@@ -9,7 +9,6 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.cs407.resumelens.auth.AuthViewModel
-import kotlinx.coroutines.flow.collectLatest
 
 sealed class Screen(val route: String) {
     data object Welcome : Screen("welcome")
