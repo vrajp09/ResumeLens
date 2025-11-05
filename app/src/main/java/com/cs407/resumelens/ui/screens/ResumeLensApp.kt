@@ -2,6 +2,8 @@ package com.cs407.resumelens.ui.screens
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -21,21 +23,23 @@ fun ResumeLensApp() {
     val nav = rememberNavController()
     val authVm: AuthViewModel = viewModel()
 
-    // If a Firebase user is already cached, go straight to Home.
-    val start = if (authVm.state.value.isSignedIn) Screen.Home.route else Screen.Welcome.route
+    // Collect the flow into Compose state (lifecycle-aware)
+    val authState by authVm.state.collectAsStateWithLifecycle()
 
-    // React to auth state changes: when signed in, go to Home
-    LaunchedEffect(Unit) {
-        authVm.state.collectLatest { st ->
-            if (st.isSignedIn) {
-                nav.navigate(Screen.Home.route) {
-                    popUpTo(0) { inclusive = true }
-                }
+    // Navigate whenever sign-in state changes
+    LaunchedEffect(authState.isSignedIn) {
+        if (authState.isSignedIn) {
+            nav.navigate(Screen.Home.route) {
+                popUpTo(0) { inclusive = true }
             }
         }
     }
 
-    NavHost(navController = nav, startDestination = start) {
+    // Use a fixed start destination; we'll navigate above if already signed in
+    NavHost(
+        navController = nav,
+        startDestination = Screen.Welcome.route
+    ) {
         composable(Screen.Welcome.route) {
             WelcomeScreen(
                 onSignUp = { nav.navigate(Screen.SignUp.route) },
@@ -46,7 +50,6 @@ fun ResumeLensApp() {
             SignUpScreen(
                 onBack = { nav.popBackStack() },
                 onSignUpComplete = { email, password ->
-                    // Delegate to ViewModel; navigation will happen via the observer above
                     authVm.signUp(email, password)
                 }
             )
@@ -54,12 +57,9 @@ fun ResumeLensApp() {
         composable(Screen.LogIn.route) {
             LogInScreen(
                 onBack = { nav.popBackStack() },
-                onLogIn = { email, password ->
-                    authVm.signIn(email, password)
-                },
-                onRecoverPassword = { /* add later if desired */ },
-                // pass through errors from VM (optional but handy)
-                errorText = authVm.state.value.error,
+                onLogIn = { email, password -> authVm.signIn(email, password) },
+                onRecoverPassword = { /* TODO */ },
+                errorText = authState.error,
                 onClearError = authVm::clearError
             )
         }
