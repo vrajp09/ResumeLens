@@ -92,7 +92,6 @@ fun PolishResumeScreen(
 
             Spacer(Modifier.height(24.dp))
 
-            // OR divider
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.fillMaxWidth()
