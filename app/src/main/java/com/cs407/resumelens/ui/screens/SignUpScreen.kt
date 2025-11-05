@@ -29,7 +29,9 @@ import com.cs407.resumelens.R
 @Composable
 fun SignUpScreen(
     onBack: () -> Unit,
-    onSignUpComplete: () -> Unit
+    onSignUpComplete: (email: String, password: String) -> Unit,
+    errorText: String? = null,
+    onClearError: () -> Unit = {}
 ) {
     var fullName by rememberSaveable { mutableStateOf("") }
     var email by rememberSaveable { mutableStateOf("") }
@@ -37,6 +39,15 @@ fun SignUpScreen(
     var password by rememberSaveable { mutableStateOf("") }
     var repeatPassword by rememberSaveable { mutableStateOf("") }
     var showPassword by rememberSaveable { mutableStateOf(false) }
+    var localError by remember { mutableStateOf<String?>(null) }
+
+    // Decide which field shows the VM error
+    val emailError = remember(errorText) {
+        errorText?.takeIf { it.contains("Email", ignoreCase = true) || it.contains("account already", ignoreCase = true) }
+    }
+    val passwordError = remember(errorText) {
+        errorText?.takeIf { it.contains("Password", ignoreCase = true) }
+    }
 
     Column(
         modifier = Modifier
@@ -81,6 +92,11 @@ fun SignUpScreen(
             value = email,
             onValueChange = { email = it },
             label = { Text("Enter your email") },
+            supportingText = {
+                if (emailError != null) {
+                    Text(emailError, color = MaterialTheme.colorScheme.error)
+                }
+            },
             leadingIcon = { Icon(Icons.Default.Email, contentDescription = null) },
             singleLine = true,
             modifier = Modifier.fillMaxWidth()
@@ -114,6 +130,13 @@ fun SignUpScreen(
                 }
             },
             singleLine = true,
+            isError = passwordError != null || localError != null,
+            supportingText = {
+                when {
+                    localError != null -> Text(localError!!, color = MaterialTheme.colorScheme.error)
+                    passwordError != null -> Text(passwordError, color = MaterialTheme.colorScheme.error)
+                }
+            },
             visualTransformation = if (showPassword) VisualTransformation.None else PasswordVisualTransformation(),
             modifier = Modifier.fillMaxWidth()
         )
@@ -126,6 +149,12 @@ fun SignUpScreen(
             label = { Text("Repeat password") },
             leadingIcon = { Icon(Icons.Default.Lock, contentDescription = null) },
             singleLine = true,
+            isError = localError != null,
+            supportingText = {
+                if (localError != null) {
+                    Text(localError!!, color = MaterialTheme.colorScheme.error)
+                }
+            },
             visualTransformation = if (showPassword) VisualTransformation.None else PasswordVisualTransformation(),
             modifier = Modifier.fillMaxWidth()
         )
@@ -136,10 +165,15 @@ fun SignUpScreen(
                 email.isNotBlank() &&
                 username.isNotBlank() &&
                 password.isNotBlank() &&
+                repeatPassword.isNotBlank() &&
                 password == repeatPassword
 
         Button(
-            onClick = onSignUpComplete,
+            onClick = {
+                onClearError()
+                localError = if (password != repeatPassword) "Passwords do not match" else null
+                if (localError == null) onSignUpComplete(email, password)
+            },
             enabled = enabled,
             modifier = Modifier
                 .fillMaxWidth()

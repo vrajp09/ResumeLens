@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "17973703801",
+    "project_id": "resumelensapp",
+    "storage_bucket": "resumelensapp.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:17973703801:android:b9baeea36981f5b32410a8",
+        "android_client_info": {
+          "package_name": "com.cs407.resumelens"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBZotkbSzfCumjOcx8MCpvD2hrnzacR7rc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
