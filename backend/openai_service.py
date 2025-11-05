@@ -8,7 +8,7 @@ load_dotenv()
 
 openai_router = APIRouter()
 
-@openai_router.get("/")
+@openai_router.get("/openai_health_check")
 def openai_health_check():
     return {"Message": "OpenAI endpoint is healthy."}
 
