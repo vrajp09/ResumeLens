@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -22,6 +23,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -42,12 +44,32 @@ fun LogInScreen(
     onRecoverPassword: () -> Unit,
     // from VM (optional)
     errorText: String? = null,
-    onClearError: () -> Unit = {}
+    onClearError: () -> Unit = {},
+    onGoToSignUp: () -> Unit = {}
 ) {
     var email by rememberSaveable { mutableStateOf("") }
     var password by rememberSaveable { mutableStateOf("") }
     var showPassword by rememberSaveable { mutableStateOf(false) }
     var rememberMe by rememberSaveable { mutableStateOf(false) }
+
+    // Decide which field should show error based on message content
+    val emailError = remember(errorText) {
+        errorText?.let { msg ->
+            when {
+                msg.contains("No account", ignoreCase = true) -> msg
+                msg.contains("Email", ignoreCase = true) -> msg
+                else -> null
+            }
+        }
+    }
+    val passwordError = remember(errorText) {
+        errorText?.let { msg ->
+            when {
+                msg.contains("password", ignoreCase = true) -> msg
+                else -> null
+            }
+        }
+    }
 
     Column(
         modifier = Modifier
@@ -90,6 +112,21 @@ fun LogInScreen(
             onValueChange = { email = it },
             label = { Text("Enter your email") },
             singleLine = true,
+            isError = emailError != null,
+            supportingText = {
+                if (emailError != null) {
+                    // If the error is “No account…”, show a Sign up action
+                    if (emailError.startsWith("No account", ignoreCase = true)) {
+                        Row {
+                            Text(emailError, color = MaterialTheme.colorScheme.error)
+                            Spacer(Modifier.width(8.dp))
+                            TextButton(onClick = onGoToSignUp) { Text("Sign up") }
+                        }
+                    } else {
+                        Text(emailError, color = MaterialTheme.colorScheme.error)
+                    }
+                }
+            },
             modifier = Modifier.fillMaxWidth()
         )
 
@@ -105,6 +142,12 @@ fun LogInScreen(
                 }
             },
             singleLine = true,
+            isError = passwordError != null,
+            supportingText = {
+                if (passwordError != null) {
+                    Text(passwordError, color = MaterialTheme.colorScheme.error)
+                }
+            },
             visualTransformation = if (showPassword) VisualTransformation.None else PasswordVisualTransformation(),
             modifier = Modifier.fillMaxWidth()
         )
@@ -127,7 +170,10 @@ fun LogInScreen(
 
         val enabled = email.isNotBlank() && password.isNotBlank()
         Button(
-            onClick = { onLogIn(email, password) },
+            onClick = {
+                onClearError()
+                onLogIn(email, password)
+            },
             enabled = enabled,
             modifier = Modifier
                 .fillMaxWidth()
