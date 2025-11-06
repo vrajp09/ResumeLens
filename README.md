@@ -111,6 +111,7 @@ POST /analyze
 ├── README.md
 ├── app
 │   ├── build.gradle.kts
+│   ├── google-services.json
 │   ├── proguard-rules.pro
 │   └── src
 │       └── main
@@ -121,12 +122,20 @@ POST /analyze
 │           │           ├── ResumeLens.kt
 │           │           └── resumelens
 │           │               ├── MainActivity.kt
+│           │               ├── auth
+│           │               │   ├── AuthRepository.kt
+│           │               │   └── AuthViewModel.kt
 │           │               └── ui
 │           │                   ├── components
 │           │                   │   └── ProfileMenu.kt
 │           │                   ├── screens
+│           │                   │   ├── DashboardScreen.kt
+│           │                   │   ├── HomeScreen.kt
 │           │                   │   ├── LogInScreen.kt
+│           │                   │   ├── PolishResumeScreen.kt
 │           │                   │   ├── ProfileScreen.kt
+│           │                   │   ├── ProfileSettingsScreen.kt
+│           │                   │   ├── ResumeAnalysisScreen.kt
 │           │                   │   ├── ResumeLensApp.kt
 │           │                   │   ├── SignUpScreen.kt
 │           │                   │   └── WelcomeScreen.kt
