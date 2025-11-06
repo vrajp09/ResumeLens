@@ -11,10 +11,29 @@ import androidx.navigation.compose.rememberNavController
 import com.cs407.resumelens.auth.AuthViewModel
 
 sealed class Screen(val route: String) {
+    // Auth Flow
     data object Welcome : Screen("welcome")
     data object SignUp  : Screen("signup")
     data object LogIn   : Screen("login")
-    data object Home    : Screen("home")
+    
+    // Main App Flow
+    data object Dashboard : Screen("dashboard")
+    data object PolishResume : Screen("polish_resume")
+    data object Camera : Screen("camera")
+    data object ResumeAnalysis : Screen("resume_analysis")
+    
+    // Profile & Settings
+    data object ProfileSettings : Screen("profile_settings")
+    
+    // Helpers for navigation arguments
+    companion object {
+        const val RESUME_ID_ARG = "resumeId"
+        fun resumeAnalysis(resumeId: String? = null) = if (resumeId != null) {
+            "resume_analysis/$resumeId"
+        } else {
+            ResumeAnalysis.route
+        }
+    }
 }
 
 @Composable
@@ -28,7 +47,7 @@ fun ResumeLensApp() {
     // Navigate whenever sign-in state changes
     LaunchedEffect(authState.isSignedIn) {
         if (authState.isSignedIn) {
-            nav.navigate(Screen.Home.route) {
+            nav.navigate(Screen.Dashboard.route) {
                 popUpTo(0) { inclusive = true }
             }
         }
@@ -62,8 +81,52 @@ fun ResumeLensApp() {
                 onClearError = authVm::clearError
             )
         }
-        composable(Screen.Home.route) {
-            HomeScreen(
+        composable(Screen.Dashboard.route) {
+            DashboardScreen(
+                onNavigateToPolishResume = { nav.navigate(Screen.PolishResume.route) },
+                onNavigateToResumeAnalysis = { resumeId ->
+                    nav.navigate(Screen.resumeAnalysis(resumeId))
+                },
+                onOpenProfile = { /* Profile handled as drawer overlay */ },
+                onNavigateToProfileSettings = { nav.navigate(Screen.ProfileSettings.route) },
+                onNavigateToResumeTips = { /* TODO: Implement resume tips screen */ },
+                onSignOut = {
+                    authVm.signOut()
+                    nav.navigate(Screen.Welcome.route) { popUpTo(0) { inclusive = true } }
+                }
+            )
+        }
+        composable(Screen.PolishResume.route) {
+            PolishResumeScreen(
+                onBack = { nav.popBackStack() },
+                onContinue = { nav.navigate(Screen.Camera.route) }
+            )
+        }
+        composable(Screen.Camera.route) {
+            CameraScreen(
+                onBack = { nav.popBackStack() },
+                onPhotoTaken = { imageUri ->
+                    // nav back to ResumeAnalysis.kt after photo is taken
+                    nav.navigate(Screen.ResumeAnalysis.route) {
+                        popUpTo(Screen.Dashboard.route) { inclusive = false }
+                    }
+                }
+            )
+        }
+        composable(Screen.ResumeAnalysis.route) {
+            ResumeAnalysisScreen(
+                onBack = { nav.popBackStack() },
+                onImproveScore = {
+                    // Loop back to PolishResume
+                    nav.navigate(Screen.PolishResume.route) {
+                        popUpTo(Screen.Dashboard.route) { inclusive = false }
+                    }
+                }
+            )
+        }
+        composable(Screen.ProfileSettings.route) {
+            ProfileSettingsScreen(
+                onBack = { nav.popBackStack() },
                 onSignOut = {
                     authVm.signOut()
                     nav.navigate(Screen.Welcome.route) { popUpTo(0) { inclusive = true } }
