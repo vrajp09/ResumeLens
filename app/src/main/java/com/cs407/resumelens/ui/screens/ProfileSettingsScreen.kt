@@ -24,7 +24,10 @@ import com.cs407.resumelens.R
 import com.cs407.resumelens.ui.theme.ResumeLensTheme
 
 @Composable
-fun ProfileSettingsScreen(onBack: () -> Unit = {}) {
+fun ProfileSettingsScreen(
+    onBack: () -> Unit = {},
+    onSignOut: () -> Unit = {}
+) {
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -105,7 +108,7 @@ fun ProfileSettingsScreen(onBack: () -> Unit = {}) {
         Spacer(modifier = Modifier.height(40.dp))
 
         Button(
-            onClick = { /* handle logout later */ },
+            onClick = onSignOut,
             colors = ButtonDefaults.buttonColors(containerColor = Color.Gray),
             shape = RoundedCornerShape(8.dp),
             modifier = Modifier

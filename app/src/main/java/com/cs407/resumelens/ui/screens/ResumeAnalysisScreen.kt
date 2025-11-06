@@ -26,7 +26,8 @@ import com.cs407.resumelens.ui.theme.ResumeLensTheme
 // Citation- https://developer.android.com/reference/kotlin/androidx/compose/foundation/layout/Arrangement
 @Composable
 fun ResumeAnalysisScreen(
-    onBack: () -> Unit = {}
+    onBack: () -> Unit = {},
+    onImproveScore: () -> Unit = {}
 ) {
     Column(
         modifier = Modifier
@@ -84,7 +85,7 @@ fun ResumeAnalysisScreen(
         Spacer(modifier = Modifier.height(48.dp))
 
         Button(
-            onClick = { /* navigate later */ },
+            onClick = onImproveScore,
             modifier = Modifier
                 .fillMaxWidth()
                 .height(50.dp),
