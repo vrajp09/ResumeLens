@@ -10,7 +10,6 @@ data class AuthUiState(
     val loading: Boolean = false,
     val error: String? = null,
     val isSignedIn: Boolean = Firebase.auth.currentUser != null
-
 )
 
 class AuthViewModel(
