@@ -1,12 +1,7 @@
 package com.cs407.resumelens.ui.screens
 
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -14,19 +9,9 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Person
-import androidx.compose.material3.Button
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
@@ -38,7 +23,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.cs407.resumelens.R
-
 
 @Composable
 fun SignUpScreen(
@@ -53,15 +37,29 @@ fun SignUpScreen(
     var password by rememberSaveable { mutableStateOf("") }
     var repeatPassword by rememberSaveable { mutableStateOf("") }
     var showPassword by rememberSaveable { mutableStateOf(false) }
-    var localError by remember { mutableStateOf<String?>(null) }
 
-    // Decide which field shows the VM error
-    val emailError = remember(errorText) {
-        errorText?.takeIf { it.contains("Email", ignoreCase = true) || it.contains("account already", ignoreCase = true) }
+    // Map ViewModel error to correct field
+    val emailFieldError: String? = when (errorText) {
+        "Email is empty",
+        "Invalid Email Format" -> errorText
+        else -> null
     }
-    val passwordError = remember(errorText) {
-        errorText?.takeIf { it.contains("Password", ignoreCase = true) }
+
+    val passwordFieldError: String? = when (errorText) {
+        "Password is empty",
+        "Password is too short",
+        "Password should contain at least one lowercase letter, one uppercase letter, and one digit" -> errorText
+        else -> null
     }
+
+    // Local repeat-password mismatch
+    val repeatMismatch: Boolean = remember(password, repeatPassword) {
+        repeatPassword.isNotBlank() && password.isNotBlank() && repeatPassword != password
+    }
+
+    // Any other VM error (e.g., Firebase collision) goes at the top
+    val topError: String? =
+        if (errorText != null && emailFieldError == null && passwordFieldError == null) errorText else null
 
     Column(
         modifier = Modifier
@@ -89,7 +87,17 @@ fun SignUpScreen(
             textAlign = TextAlign.Center
         )
 
-        Spacer(Modifier.height(20.dp))
+        Spacer(Modifier.height(12.dp))
+
+        // Optional banner for non-field errors
+        if (topError != null) {
+            Text(
+                text = topError,
+                color = MaterialTheme.colorScheme.error,
+                style = MaterialTheme.typography.bodyMedium
+            )
+            Spacer(Modifier.height(8.dp))
+        }
 
         OutlinedTextField(
             value = fullName,
@@ -104,15 +112,19 @@ fun SignUpScreen(
 
         OutlinedTextField(
             value = email,
-            onValueChange = { email = it },
-            label = { Text("Enter your email") },
-            supportingText = {
-                if (emailError != null) {
-                    Text(emailError, color = MaterialTheme.colorScheme.error)
-                }
+            onValueChange = {
+                email = it
+                // you could call onClearError() here if you want live clearing
             },
+            label = { Text("Enter your email") },
             leadingIcon = { Icon(Icons.Default.Email, contentDescription = null) },
             singleLine = true,
+            isError = emailFieldError != null,
+            supportingText = {
+                if (emailFieldError != null) {
+                    Text(emailFieldError, color = MaterialTheme.colorScheme.error)
+                }
+            },
             modifier = Modifier.fillMaxWidth()
         )
 
@@ -135,20 +147,15 @@ fun SignUpScreen(
             label = { Text("Create your password") },
             leadingIcon = { Icon(Icons.Default.Lock, contentDescription = null) },
             trailingIcon = {
-                IconButton(onClick = { showPassword = !showPassword }) {
-                    var trailingIcon = @androidx.compose.runtime.Composable {
-                        TextButton(onClick = { showPassword = !showPassword }) {
-                            Text(if (showPassword) "Hide" else "Show")
-                        }
-                    }
+                TextButton(onClick = { showPassword = !showPassword }) {
+                    Text(if (showPassword) "Hide" else "Show")
                 }
             },
             singleLine = true,
-            isError = passwordError != null || localError != null,
+            isError = passwordFieldError != null,
             supportingText = {
-                when {
-                    localError != null -> Text(localError!!, color = MaterialTheme.colorScheme.error)
-                    passwordError != null -> Text(passwordError, color = MaterialTheme.colorScheme.error)
+                if (passwordFieldError != null) {
+                    Text(passwordFieldError, color = MaterialTheme.colorScheme.error)
                 }
             },
             visualTransformation = if (showPassword) VisualTransformation.None else PasswordVisualTransformation(),
@@ -163,10 +170,10 @@ fun SignUpScreen(
             label = { Text("Repeat password") },
             leadingIcon = { Icon(Icons.Default.Lock, contentDescription = null) },
             singleLine = true,
-            isError = localError != null,
+            isError = repeatMismatch,
             supportingText = {
-                if (localError != null) {
-                    Text(localError!!, color = MaterialTheme.colorScheme.error)
+                if (repeatMismatch) {
+                    Text("Passwords do not match", color = MaterialTheme.colorScheme.error)
                 }
             },
             visualTransformation = if (showPassword) VisualTransformation.None else PasswordVisualTransformation(),
@@ -180,13 +187,12 @@ fun SignUpScreen(
                 username.isNotBlank() &&
                 password.isNotBlank() &&
                 repeatPassword.isNotBlank() &&
-                password == repeatPassword
+                !repeatMismatch
 
         Button(
             onClick = {
-                onClearError()
-                localError = if (password != repeatPassword) "Passwords do not match" else null
-                if (localError == null) onSignUpComplete(email, password)
+                // VM will set error for invalid email/password; we don't clear here
+                onSignUpComplete(email, password)
             },
             enabled = enabled,
             modifier = Modifier
