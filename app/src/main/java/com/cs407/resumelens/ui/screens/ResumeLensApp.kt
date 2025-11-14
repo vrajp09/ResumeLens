@@ -9,7 +9,6 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.cs407.resumelens.auth.AuthViewModel
-import kotlinx.coroutines.flow.collectLatest
 
 sealed class Screen(val route: String) {
     // Auth Flow
@@ -70,7 +69,9 @@ fun ResumeLensApp() {
                 onBack = { nav.popBackStack() },
                 onSignUpComplete = { email, password ->
                     authVm.signUp(email, password)
-                }
+                },
+                errorText = authState.error,          // <-- wire VM error into screen
+                onClearError = authVm::clearError    // <-- allow screen to clear it
             )
         }
         composable(Screen.LogIn.route) {

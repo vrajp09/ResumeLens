@@ -1,34 +1,18 @@
 package com.cs407.resumelens.ui.screens
 
+import android.widget.Toast
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Button
-import androidx.compose.material3.Checkbox
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
@@ -42,34 +26,25 @@ fun LogInScreen(
     onBack: () -> Unit,
     onLogIn: (email: String, password: String) -> Unit,
     onRecoverPassword: () -> Unit,
-    // from VM (optional)
+    // from VM
     errorText: String? = null,
     onClearError: () -> Unit = {},
     onGoToSignUp: () -> Unit = {}
 ) {
+    val context = LocalContext.current
+
+    // Any auth/validation error -> show a single generic toast
+    LaunchedEffect(errorText) {
+        if (!errorText.isNullOrBlank()) {
+            Toast.makeText(context, "Invalid Email or Password", Toast.LENGTH_LONG).show()
+            onClearError()
+        }
+    }
+
     var email by rememberSaveable { mutableStateOf("") }
     var password by rememberSaveable { mutableStateOf("") }
     var showPassword by rememberSaveable { mutableStateOf(false) }
     var rememberMe by rememberSaveable { mutableStateOf(false) }
-
-    // Decide which field should show error based on message content
-    val emailError = remember(errorText) {
-        errorText?.let { msg ->
-            when {
-                msg.contains("No account", ignoreCase = true) -> msg
-                msg.contains("Email", ignoreCase = true) -> msg
-                else -> null
-            }
-        }
-    }
-    val passwordError = remember(errorText) {
-        errorText?.let { msg ->
-            when {
-                msg.contains("password", ignoreCase = true) -> msg
-                else -> null
-            }
-        }
-    }
 
     Column(
         modifier = Modifier
@@ -99,34 +74,11 @@ fun LogInScreen(
 
         Spacer(Modifier.height(20.dp))
 
-        // Error from ViewModel
-        if (errorText != null) {
-            Text(errorText, color = MaterialTheme.colorScheme.error)
-            Spacer(Modifier.height(8.dp))
-            // clear after first draw so it doesn't persist on config change
-            LaunchedEffect(errorText) { onClearError() }
-        }
-
         OutlinedTextField(
             value = email,
             onValueChange = { email = it },
             label = { Text("Enter your email") },
             singleLine = true,
-            isError = emailError != null,
-            supportingText = {
-                if (emailError != null) {
-                    // If the error is “No account…”, show a Sign up action
-                    if (emailError.startsWith("No account", ignoreCase = true)) {
-                        Row {
-                            Text(emailError, color = MaterialTheme.colorScheme.error)
-                            Spacer(Modifier.width(8.dp))
-                            TextButton(onClick = onGoToSignUp) { Text("Sign up") }
-                        }
-                    } else {
-                        Text(emailError, color = MaterialTheme.colorScheme.error)
-                    }
-                }
-            },
             modifier = Modifier.fillMaxWidth()
         )
 
@@ -142,12 +94,6 @@ fun LogInScreen(
                 }
             },
             singleLine = true,
-            isError = passwordError != null,
-            supportingText = {
-                if (passwordError != null) {
-                    Text(passwordError, color = MaterialTheme.colorScheme.error)
-                }
-            },
             visualTransformation = if (showPassword) VisualTransformation.None else PasswordVisualTransformation(),
             modifier = Modifier.fillMaxWidth()
         )
@@ -171,7 +117,7 @@ fun LogInScreen(
         val enabled = email.isNotBlank() && password.isNotBlank()
         Button(
             onClick = {
-                onClearError()
+                onClearError() // clear any stale message before attempting
                 onLogIn(email, password)
             },
             enabled = enabled,
