@@ -3,5 +3,5 @@ uvicorn
 python-multipart
 google-cloud-vision
 pillow
-openai
+google-generativeai
 python-dotenv
