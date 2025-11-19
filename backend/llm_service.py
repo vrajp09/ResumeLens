@@ -146,22 +146,50 @@ def openai_health_check():
 
 @gemini_router.post("/analyze", response_model=AnalysisResponse)
 async def analyze_resume(request: Request):
+    # fix any parsing errors before we analyze 
+    try:
+        body = await request.body()
+        body_str = body.decode('utf-8')
+        
+        try:
+            data = json.loads(body_str)
+        except json.JSONDecodeError as e:
+            try:
+                fixed_body = control_char_clean(body_str)
+                data = json.loads(fixed_body)
+            except json.JSONDecodeError:
+                raise HTTPException(
+                    status_code=422,
+                    detail=f"Invalid JSON format. Error: {str(e)}"
+                )
+        
+        # Pydantic validation as a final check
+        payload = AnalysisRequest(**data)
+        
+    except Exception as e:
+        raise Exception(
+            detail=f"An error occurred during parsing: {e}"
+        )
+    
+    configure_gemini()
+    
+    # build a generative model
     try:
         model = genai.GenerativeModel(GEMINI_MODEL)
-        prompt = build_prompt(request)
+        prompt = build_prompt(payload)
         response = model.generate_content(prompt)
-    except Exception as exc:
+    except Exception as e:
         raise HTTPException(
             status_code=502,
-            detail=f"Gemini request failed: {exc}"
+            detail=f"Gemini request failed: {e}"
         )
 
-    response_data = parse_response(response)
+    llm_response = parse_response(response)
 
     try:
-        return AnalysisResponse(**response_data)
-    except ValidationError as exc:
+        return AnalysisResponse(**llm_response)
+    except ValidationError as eexc:
         raise HTTPException(
             status_code=502,
-            detail=f"Gemini response failed validation: {exc}"
+            detail=f"Gemini response failed validation: {e}"
         )
