@@ -1,6 +1,6 @@
 # Gemini LLM endpoints go here
 import google.generativeai as genai
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Request
 from dotenv import load_dotenv
 from pydantic import BaseModel, Field, ValidationError
 from typing import List, Optional
@@ -18,7 +18,7 @@ class Suggestion(BaseModel):
 
 
 class AnalysisRequest(BaseModel):
-    resume_text: str = Field(..., min_length=50, max_length=6000)
+    resume_text: str = Field(..., min_length=50, max_length=10000)
     target_role: Optional[str] = Field(
         None,
         description="Optional role or industry focus to tailor suggestions."
@@ -30,7 +30,7 @@ class AnalysisResponse(BaseModel):
     summary: str
     suggestions: List[Suggestion]
 
-GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-1.5-flash")
+GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-2.5-flash-lite")
 MAX_SUGGESTIONS = 6
 SYSTEM_PROMPT = (
     "You are a meticulous resume reviewer focused on ATS alignment. "
@@ -63,6 +63,51 @@ def build_prompt(payload: AnalysisRequest) -> str:
         '{"score": <number>, "summary": "<string>", "suggestions": [{"category": "<string>", "issue": "<string>", "recommendation": "<string>"}]}'
     ]
     return "\n".join(base)
+
+# escapes all control characters in our input to ensure valid JSON string values
+def control_char_clean(json_str: str) -> str:
+    final_string = []
+    quotation_detected, escape_next = False, False
+    i = 0
+    
+    while i < len(json_str):
+        char = json_str[i]
+        
+        if escape_next:
+            final_string.append(char)
+            escape_next = False
+            i += 1
+            continue
+        # handle any backslashes
+        if char == '\\':
+            final_string.append(char)
+            escape_next = True
+            i += 1
+            continue
+        # handle any quotation marks
+        if char == '"':
+            quotation_detected = not quotation_detected
+            final_string.append(char)
+            i += 1
+            continue
+        
+        # we're now inside a string (not brackets or colon)
+        if quotation_detected:
+            # escape any control characters we find
+            if char == '\n':
+                final_string.append('\\n')
+            elif char == '\r':
+                final_string.append('\\r')
+            elif char == '\t':
+                final_string.append('\\t')
+            else:
+                final_string.append(char)
+        else:
+            final_string.append(char)
+        
+        i += 1
+    
+    return ''.join(final_string)
 
 # cleans up Gemini output and extracts JSON
 def parse_response(response) -> dict:
@@ -98,13 +143,12 @@ def parse_response(response) -> dict:
 def openai_health_check():
     return {"Message": "Gemini LLM endpoint is healthy."}
 
+
 @gemini_router.post("/analyze", response_model=AnalysisResponse)
-async def analyze_resume(payload: AnalysisRequest):
-    configure_gemini()
-    
+async def analyze_resume(request: Request):
     try:
         model = genai.GenerativeModel(GEMINI_MODEL)
-        prompt = build_prompt(payload)
+        prompt = build_prompt(request)
         response = model.generate_content(prompt)
     except Exception as exc:
         raise HTTPException(
@@ -112,10 +156,10 @@ async def analyze_resume(payload: AnalysisRequest):
             detail=f"Gemini request failed: {exc}"
         )
 
-    data = parse_response(response)
+    response_data = parse_response(response)
 
     try:
-        return AnalysisResponse(**data)
+        return AnalysisResponse(**response_data)
     except ValidationError as exc:
         raise HTTPException(
             status_code=502,
