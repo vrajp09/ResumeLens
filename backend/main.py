@@ -2,13 +2,13 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
-from openai_service import openai_router 
+from llm_service import gemini_router 
 from ocr_service import ocr_router
 
 load_dotenv()
 app = FastAPI()
 
-app.include_router(openai_router)
+app.include_router(gemini_router)
 app.include_router(ocr_router)
 
 app.add_middleware(

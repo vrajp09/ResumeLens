@@ -2,7 +2,7 @@
 
 A mobile-first AI-powered tool that scans, evaluates, and optimizes resumes for ATS systems. Upload a PDF or resume photo and receive instant feedback and actionable improvement recommendations.
 
-Built with **Kotlin + Jetpack Compose** and **Python + FastAPI**, featuring a fullstack architecture using **Google Cloud Vision OCR** and **OpenAI** for intelligent resume analysis.
+Built with **Kotlin + Jetpack Compose** and **Python + FastAPI**, featuring a fullstack architecture using **Google Cloud Vision OCR** and **Gemini** for intelligent resume analysis.
 
 ## Key Features
 
@@ -13,7 +13,7 @@ Built with **Kotlin + Jetpack Compose** and **Python + FastAPI**, featuring a fu
   Uses Google Cloud Vision API to accurately extract text from resume images, handling various fonts, layouts, and formatting styles.
 
 - **AI-Powered Resume Analysis**  
-  Leverages OpenAI to identify weak phrasing, detect missing keywords, and highlight areas for improvement.
+  Leverages Gemini to identify weak phrasing, detect missing keywords, and highlight areas for improvement.
 
 - **ATS Optimization Scoring**  
   Evaluates how well a resume aligns with Applicant Tracking System requirements, providing a quantitative score and specific recommendations.
@@ -74,7 +74,7 @@ POST /analyze
 
 **Process:**
 
-- OpenAI analyzes resume content for:
+- Gemini analyzes resume content for:
   - Weak or passive language
   - Missing action verbs
   - ATS keyword optimization
@@ -162,7 +162,7 @@ POST /analyze
 │   ├── credentials
 │   ├── main.py
 │   ├── ocr_service.py
-│   ├── openai_service.py
+│   ├── llm_service.py
 │   └── requirements.txt
 ├── build.gradle.kts
 ├── gradle
@@ -193,7 +193,7 @@ pip install -r requirements.txt
 Create a `.env` file in the `backend/` directory:
 
 ```bash
-OPENAI_API_KEY=your_openai_api_key_here
+GEMINI_API_KEY=your_gemini_api_key_here
 GOOGLE_APPLICATION_CREDENTIALS=./credentials/google_service_account.json # create on Google Cloud Console
 ```
 
@@ -239,8 +239,8 @@ uvicorn main:app --reload --host 0.0.0.0 --port 8000 # available at localhost:80
 ### Milestone 2 (Weeks 2-3)
 
 - [x] Integrate Google Cloud Vision OCR
-- [ ] Implement camera capture and image upload flow on frontend
-- [ ] Build Gemini resume analysis logic
+- [x] Implement camera capture and image upload flow on frontend
+- [x] Build Gemini resume analysis logic
 - [ ] Create results display screen
 
 ### Milestones 3 & 4 (Weeks 4-5)
