@@ -9,6 +9,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.cs407.resumelens.auth.AuthViewModel
+import com.cs407.resumelens.data.UserViewModel
 
 sealed class Screen(val route: String) {
     // Auth Flow
@@ -67,8 +68,8 @@ fun ResumeLensApp() {
         composable(Screen.SignUp.route) {
             SignUpScreen(
                 onBack = { nav.popBackStack() },
-                onSignUpComplete = { email, password ->
-                    authVm.signUp(email, password)
+                onSignUpComplete = { email, password, fullName, username ->
+                    authVm.signUp(email, password, fullName, username)
                 },
                 errorText = authState.error,          // <-- wire VM error into screen
                 onClearError = authVm::clearError    // <-- allow screen to clear it
@@ -84,6 +85,10 @@ fun ResumeLensApp() {
             )
         }
         composable(Screen.Dashboard.route) {
+            val userVm: UserViewModel = viewModel()
+            LaunchedEffect(Unit) {
+                userVm.refreshProfile()
+            }
             DashboardScreen(
                 onNavigateToPolishResume = { nav.navigate(Screen.PolishResume.route) },
                 onNavigateToResumeAnalysis = { resumeId ->
@@ -95,7 +100,8 @@ fun ResumeLensApp() {
                 onSignOut = {
                     authVm.signOut()
                     nav.navigate(Screen.Welcome.route) { popUpTo(0) { inclusive = true } }
-                }
+                },
+                userViewModel = userVm
             )
         }
         composable(Screen.PolishResume.route) {
@@ -127,12 +133,17 @@ fun ResumeLensApp() {
             )
         }
         composable(Screen.ProfileSettings.route) {
+            val userVm: UserViewModel = viewModel()
+            LaunchedEffect(Unit) {
+                userVm.refreshProfile()
+            }
             ProfileSettingsScreen(
                 onBack = { nav.popBackStack() },
                 onSignOut = {
                     authVm.signOut()
                     nav.navigate(Screen.Welcome.route) { popUpTo(0) { inclusive = true } }
-                }
+                },
+                userViewModel = userVm
             )
         }
     }

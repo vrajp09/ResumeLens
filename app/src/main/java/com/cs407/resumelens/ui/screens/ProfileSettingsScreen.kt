@@ -11,6 +11,8 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -20,14 +22,23 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.cs407.resumelens.R
+import com.cs407.resumelens.data.UserViewModel
 import com.cs407.resumelens.ui.theme.ResumeLensTheme
 
 @Composable
 fun ProfileSettingsScreen(
     onBack: () -> Unit = {},
-    onSignOut: () -> Unit = {}
+    onSignOut: () -> Unit = {},
+    userViewModel: UserViewModel = viewModel()
 ) {
+    val userState by userViewModel.state.collectAsStateWithLifecycle()
+    
+    LaunchedEffect(Unit) {
+        userViewModel.refreshProfile()
+    }
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -78,15 +89,23 @@ fun ProfileSettingsScreen(
 
             Column {
                 Text(
-                    text = "Brittany Dinan",
+                    text = userState.userProfile?.name ?: "User",
                     fontWeight = FontWeight.Bold,
                     fontSize = 18.sp
                 )
-                Text(
-                    text = "@b.dinan5",
-                    color = Color.Gray,
-                    fontSize = 14.sp
-                )
+                if (userState.userProfile?.username?.isNotBlank() == true) {
+                    Text(
+                        text = "@${userState.userProfile?.username}",
+                        color = Color.Gray,
+                        fontSize = 14.sp
+                    )
+                } else {
+                    Text(
+                        text = userState.userProfile?.email ?: "",
+                        color = Color.Gray,
+                        fontSize = 14.sp
+                    )
+                }
             }
         }
 

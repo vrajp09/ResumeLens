@@ -29,6 +29,8 @@ import com.cs407.resumelens.R
 
 @Composable
 fun ProfileMenu(
+    userName: String = "User",
+    username: String = "",
     onProfileClick: () -> Unit = {},
     onSettingsClick: () -> Unit = {},
     onResumeTipsClick: () -> Unit = {},
@@ -55,8 +57,12 @@ fun ProfileMenu(
                     .clip(RoundedCornerShape(50))
             )
             Spacer(Modifier.height(10.dp))
-            Text("Brittany Dinan", fontWeight = FontWeight.Bold, fontSize = 18.sp)
-            Text("@b.dinan5", color = Color.Gray, fontSize = 14.sp)
+            Text(userName, fontWeight = FontWeight.Bold, fontSize = 18.sp)
+            if (username.isNotBlank()) {
+                Text("@$username", color = Color.Gray, fontSize = 14.sp)
+            } else {
+                Text("User", color = Color.Gray, fontSize = 14.sp)
+            }
         }
 
         Spacer(Modifier.height(16.dp))

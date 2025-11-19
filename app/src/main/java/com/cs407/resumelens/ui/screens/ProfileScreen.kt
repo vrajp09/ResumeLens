@@ -7,6 +7,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -15,10 +17,20 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.cs407.resumelens.R
+import com.cs407.resumelens.data.UserViewModel
 
 @Composable
-fun ProfileScreen() {
+fun ProfileScreen(
+    userViewModel: UserViewModel = viewModel()
+) {
+    val userState by userViewModel.state.collectAsStateWithLifecycle()
+    
+    LaunchedEffect(Unit) {
+        userViewModel.refreshProfile()
+    }
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -68,15 +80,26 @@ fun ProfileScreen() {
                 )
             }
             Spacer(Modifier.height(8.dp))
-            Text("Brittany Dinan", fontWeight = FontWeight.Bold, fontSize = 20.sp)
-            Text("Premium account", color = Color.Gray, fontSize = 14.sp)
+            Text(
+                userState.userProfile?.name ?: "User",
+                fontWeight = FontWeight.Bold,
+                fontSize = 20.sp
+            )
+            if (userState.userProfile?.username?.isNotBlank() == true) {
+                Text("@${userState.userProfile?.username}", color = Color.Gray, fontSize = 14.sp)
+            } else {
+                Text("Premium account", color = Color.Gray, fontSize = 14.sp)
+            }
         }
 
         Spacer(Modifier.height(24.dp))
 
-        InfoItem("Email", "email@email.com")
-        InfoItem("Phone", "(+123) 000 111 222 333")
-        InfoItem("Location", "New York, USA")
+        if (userState.userProfile?.email?.isNotBlank() == true) {
+            InfoItem("Email", userState.userProfile?.email ?: "")
+        }
+        if (userState.userProfile?.username?.isNotBlank() == true) {
+            InfoItem("Username", userState.userProfile?.username ?: "")
+        }
 
         Spacer(Modifier.height(24.dp))
 
