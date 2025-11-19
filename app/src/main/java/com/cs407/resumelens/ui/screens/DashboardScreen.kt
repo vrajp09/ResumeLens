@@ -20,7 +20,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.cs407.resumelens.R
+import com.cs407.resumelens.data.UserViewModel
 import com.cs407.resumelens.ui.components.ProfileMenu
 import kotlinx.coroutines.launch
 
@@ -32,17 +35,21 @@ fun DashboardScreen(
     onOpenProfile: () -> Unit = {},
     onNavigateToProfileSettings: () -> Unit = {},
     onNavigateToResumeTips: () -> Unit = {},
-    onSignOut: () -> Unit = {}
+    onSignOut: () -> Unit = {},
+    userViewModel: UserViewModel = viewModel()
 ) {
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val profileDrawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
+    val userState by userViewModel.state.collectAsStateWithLifecycle()
 
     ModalNavigationDrawer(
         drawerState = drawerState,
         //onDismissRequest = { scope.launch { drawerState.close() } },
         drawerContent = {
             ProfileMenu(
+                userName = userState.userProfile?.name ?: "User",
+                username = userState.userProfile?.username ?: "",
                 onProfileClick = {
                     scope.launch {
                         drawerState.close()
@@ -75,6 +82,9 @@ fun DashboardScreen(
             drawerState = profileDrawerState,
             drawerContent = {
                 ProfileSidebar(
+                    userName = userState.userProfile?.name ?: "User",
+                    userEmail = userState.userProfile?.email ?: "",
+                    username = userState.userProfile?.username ?: "",
                     onClose = { scope.launch { profileDrawerState.close() } },
                     onNavigateToSettings = {
                         scope.launch {
@@ -185,6 +195,9 @@ fun DashboardScreen(
 // Profile Sidebar Component (modal drawer overlay)
 @Composable
 private fun ProfileSidebar(
+    userName: String = "User",
+    userEmail: String = "",
+    username: String = "",
     onClose: () -> Unit = {},
     onNavigateToSettings: () -> Unit = {}
 ) {
@@ -234,15 +247,22 @@ private fun ProfileSidebar(
                     )
                 }
                 Spacer(Modifier.height(8.dp))
-                Text("Brittany Dinan", fontWeight = FontWeight.Bold, fontSize = 20.sp)
-                Text("Premium account", color = Color.Gray, fontSize = 14.sp)
+                Text(userName, fontWeight = FontWeight.Bold, fontSize = 20.sp)
+                if (username.isNotBlank()) {
+                    Text("@$username", color = Color.Gray, fontSize = 14.sp)
+                } else {
+                    Text("Premium account", color = Color.Gray, fontSize = 14.sp)
+                }
             }
 
             Spacer(Modifier.height(24.dp))
 
-            InfoItem("Email", "email@email.com")
-            InfoItem("Phone", "(+123) 000 111 222 333")
-            InfoItem("Location", "New York, USA")
+            if (userEmail.isNotBlank()) {
+                InfoItem("Email", userEmail)
+            }
+            if (username.isNotBlank()) {
+                InfoItem("Username", username)
+            }
 
             Spacer(Modifier.height(24.dp))
 
