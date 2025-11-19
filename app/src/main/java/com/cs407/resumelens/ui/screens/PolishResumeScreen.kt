@@ -1,8 +1,11 @@
 package com.cs407.resumelens.ui.screens
 
-import androidx.compose.foundation.Image
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
@@ -32,8 +35,17 @@ import com.cs407.resumelens.ui.theme.ResumeLensTheme
 @Composable
 fun PolishResumeScreen(
     onBack: () -> Unit = {},
-    onContinue: () -> Unit = {}
+    onContinue: () -> Unit = {},
+    onFileSelected: (Uri) -> Unit = {}
 ) {
+    val filePickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri: Uri? ->
+        uri?.let { 
+            onFileSelected(it)
+        }
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -73,8 +85,9 @@ fun PolishResumeScreen(
                     .fillMaxWidth()
                     .height(180.dp)
                     .clip(RoundedCornerShape(16.dp))
-                    .border(2.dp, Color(0xFF00B67A), RoundedCornerShape(16.dp)) // green border
-                    .background(Color.White),
+                    .border(2.dp, Color(0xFF00B67A), RoundedCornerShape(16.dp))
+                    .background(Color.White)
+                    .clickable { filePickerLauncher.launch("image/*") },
                 contentAlignment = Alignment.Center
             ) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
