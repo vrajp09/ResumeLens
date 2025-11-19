@@ -48,7 +48,6 @@ def configure_gemini():
 
 
 def build_prompt(payload: AnalysisRequest) -> str:
-    """Build the complete prompt for Gemini including system instructions."""
     base = [
         SYSTEM_PROMPT,
         "",
@@ -65,11 +64,39 @@ def build_prompt(payload: AnalysisRequest) -> str:
     ]
     return "\n".join(base)
 
+# cleans up Gemini output and extracts JSON
+def parse_response(response) -> dict:
+    try:
+        llm_output = response.text
+    except Exception as e:
+        raise HTTPException(
+            status_code=502,
+            detail=f"Incorrect Gemini response format: {e}"
+        )
+
+    # remove all whitespace and backticks
+    llm_output = llm_output.strip()
+    if llm_output.startswith("```json"):
+        llm_output = llm_output[7:]  
+    if llm_output.startswith("```"):
+        llm_output = llm_output[3:] 
+    if llm_output.endswith("```"):
+        llm_output = llm_output[:-3]  
+    llm_output = llm_output.strip()
+
+    # ensure that we're getting standard JSON
+    try:
+        parsed = json.loads(llm_output)
+    except json.JSONDecodeError as e:
+        raise HTTPException(
+            status_code=502,
+            detail=f"Invalid JSON: {e}. Truncated repsonse: {llm_output[:150]}"
+        )
+    return parsed
 
 @gemini_router.get("/openai_health_check")
 def openai_health_check():
     return {"Message": "Gemini LLM endpoint is healthy."}
-
 
 @gemini_router.post("/analyze", response_model=AnalysisResponse)
 async def analyze_resume(payload: AnalysisRequest):
@@ -85,8 +112,10 @@ async def analyze_resume(payload: AnalysisRequest):
             detail=f"Gemini request failed: {exc}"
         )
 
+    data = parse_response(response)
+
     try:
-        return AnalysisResponse(**response)
+        return AnalysisResponse(**data)
     except ValidationError as exc:
         raise HTTPException(
             status_code=502,
