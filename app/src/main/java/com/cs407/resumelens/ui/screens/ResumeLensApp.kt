@@ -107,7 +107,13 @@ fun ResumeLensApp() {
         composable(Screen.PolishResume.route) {
             PolishResumeScreen(
                 onBack = { nav.popBackStack() },
-                onContinue = { nav.navigate(Screen.Camera.route) }
+                onContinue = { nav.navigate(Screen.Camera.route) },
+                onFileSelected = { uri ->
+                    // File picker path - navigate to results with selected image
+                    nav.navigate(Screen.ResumeAnalysis.route) {
+                        popUpTo(Screen.Dashboard.route) { inclusive = false }
+                    }
+                }
             )
         }
         composable(Screen.Camera.route) {

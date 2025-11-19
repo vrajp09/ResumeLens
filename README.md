@@ -127,8 +127,10 @@ POST /analyze
 │           │               │   └── AuthViewModel.kt
 │           │               └── ui
 │           │                   ├── components
+│           │                   │   ├── ErrorSnackbar.kt
 │           │                   │   └── ProfileMenu.kt
 │           │                   ├── screens
+│           │                   │   ├── CameraScreen.kt
 │           │                   │   ├── DashboardScreen.kt
 │           │                   │   ├── HomeScreen.kt
 │           │                   │   ├── LogInScreen.kt
@@ -214,6 +216,16 @@ uvicorn main:app --reload --host 0.0.0.0 --port 8000 # available at localhost:80
 | Vraj Patel          | Frontend Lead          | vpatel46@wisc.edu     |
 | Manan Chand         | Observer/Documentation | mtchand@wisc.edu      |
 
+## Team Roles (Rotating Weekly)
+
+| Name                | Week 2/3 Role            | Email                 |
+| ------------------- | ---------------------- | --------------------- |
+| Mahesh Ramakrishnan | Observer/Documentation | mramakrishn3@wisc.edu |
+| Akash Mohan         | Frontend Lead          | amohan29@wisc.edu     |
+| Vraj Patel          | BAckend Lead           | vpatel46@wisc.edu     |
+| Manan Chand         | Project Coordinator    | mtchand@wisc.edu      |
+
+
 ## Timeline
 
 ### Milestone 1 (Week 1)
@@ -228,7 +240,7 @@ uvicorn main:app --reload --host 0.0.0.0 --port 8000 # available at localhost:80
 
 - [x] Integrate Google Cloud Vision OCR
 - [ ] Implement camera capture and image upload flow on frontend
-- [ ] Build OpenAI resume analysis logic
+- [ ] Build Gemini resume analysis logic
 - [ ] Create results display screen
 
 ### Milestones 3 & 4 (Weeks 4-5)
