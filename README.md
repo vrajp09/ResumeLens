@@ -127,8 +127,10 @@ POST /analyze
 │           │               │   └── AuthViewModel.kt
 │           │               └── ui
 │           │                   ├── components
+│           │                   │   ├── ErrorSnackbar.kt
 │           │                   │   └── ProfileMenu.kt
 │           │                   ├── screens
+│           │                   │   ├── CameraScreen.kt
 │           │                   │   ├── DashboardScreen.kt
 │           │                   │   ├── HomeScreen.kt
 │           │                   │   ├── LogInScreen.kt

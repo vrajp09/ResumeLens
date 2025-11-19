@@ -1,8 +1,12 @@
 package com.cs407.resumelens.auth
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.cs407.resumelens.data.FirestoreRepository
 import com.google.firebase.Firebase
+import com.google.firebase.Timestamp
 import com.google.firebase.auth.auth
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
@@ -13,18 +17,44 @@ data class AuthUiState(
 )
 
 class AuthViewModel(
-    private val repo: AuthRepository = AuthRepository()
+    private val repo: AuthRepository = AuthRepository(),
+    private val firestoreRepo: FirestoreRepository = FirestoreRepository()
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(AuthUiState(isSignedIn = repo.currentUser != null))
     val state: StateFlow<AuthUiState> = _state
 
-    fun signUp(email: String, password: String) {
+    fun signUp(email: String, password: String, fullName: String, username: String) {
         if (!validate(email, password)) return
         _state.value = _state.value.copy(loading = true, error = null)
         repo.signUp(
             email, password,
-            onSuccess = { _state.value = AuthUiState(isSignedIn = true) },
+            onSuccess = {
+                // After successful authentication, save user profile to Firestore
+                val userId = repo.currentUser?.uid
+                if (userId != null) {
+                    viewModelScope.launch {
+                        val userData = mapOf(
+                            "email" to email,
+                            "name" to fullName,
+                            "username" to username,
+                            "createdAt" to Timestamp.now()
+                        )
+                        firestoreRepo.saveUserProfile(userId, userData)
+                            .onSuccess {
+                                _state.value = AuthUiState(isSignedIn = true)
+                            }
+                            .onFailure { e ->
+                                _state.value = AuthUiState(
+                                    error = "Account created but failed to save profile: ${e.message}",
+                                    isSignedIn = true
+                                )
+                            }
+                    }
+                } else {
+                    _state.value = AuthUiState(isSignedIn = true)
+                }
+            },
             onError = { msg -> _state.value = AuthUiState(error = msg, isSignedIn = false) }
         )
     }

@@ -27,7 +27,7 @@ import com.cs407.resumelens.R
 @Composable
 fun SignUpScreen(
     onBack: () -> Unit,
-    onSignUpComplete: (email: String, password: String) -> Unit,
+    onSignUpComplete: (email: String, password: String, fullName: String, username: String) -> Unit,
     errorText: String? = null,
     onClearError: () -> Unit = {}
 ) {
@@ -114,7 +114,7 @@ fun SignUpScreen(
             value = email,
             onValueChange = {
                 email = it
-                // you could call onClearError() here if you want live clearing
+
             },
             label = { Text("Enter your email") },
             leadingIcon = { Icon(Icons.Default.Email, contentDescription = null) },
@@ -192,7 +192,7 @@ fun SignUpScreen(
         Button(
             onClick = {
                 // VM will set error for invalid email/password; we don't clear here
-                onSignUpComplete(email, password)
+                onSignUpComplete(email, password, fullName, username)
             },
             enabled = enabled,
             modifier = Modifier
