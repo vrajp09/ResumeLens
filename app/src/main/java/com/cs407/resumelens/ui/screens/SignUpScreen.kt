@@ -114,7 +114,7 @@ fun SignUpScreen(
             value = email,
             onValueChange = {
                 email = it
-                // you could call onClearError() here if you want live clearing
+
             },
             label = { Text("Enter your email") },
             leadingIcon = { Icon(Icons.Default.Email, contentDescription = null) },
