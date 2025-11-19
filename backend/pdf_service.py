@@ -17,7 +17,25 @@ async def extract_pdf_text(file: UploadFile = File(...)):
                 detail="Invalid file type. Please upload a PDF file."
             )
         
-        return {"extracted_text": "test text"}
+        extracted = []
+        
+        with pdfplumber.open(io.BytesIO(file_content)) as pdf:
+            all_pages = pdf.pages
+
+            for page in all_pages:
+                page_text = page.extract_text() or None
+                if page_text:
+                    extracted.append(page_text.strip())
+        
+        full_combined_text = "\n\n".join(extracted).strip()
+        
+        if not full_combined_text:
+            raise HTTPException(
+                status_code=400, 
+                detail="No text could be extracted from the PDF."
+            )
+        
+        return {"extracted_text": full_combined_text}
     
     except HTTPException:
         raise
@@ -26,3 +44,7 @@ async def extract_pdf_text(file: UploadFile = File(...)):
             status_code=500, 
             detail=f"PDF extraction failed: {str(e)}"
         )
+
+@pdf_router.get("/pdf_health_check")
+def pdf_health_check():
+    return {"Message": "PDF extraction endpoint is healthy."}
