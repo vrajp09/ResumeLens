@@ -5,9 +5,11 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.cs407.resumelens.auth.AuthViewModel
 import com.cs407.resumelens.data.UserViewModel
 
@@ -31,9 +33,9 @@ sealed class Screen(val route: String) {
     companion object {
         const val RESUME_ID_ARG = "resumeId"
         fun resumeAnalysis(resumeId: String? = null) = if (resumeId != null) {
-            "resume_analysis/$resumeId"
+            "resume_analysis?analysisId=$resumeId"
         } else {
-            ResumeAnalysis.route
+            "resume_analysis"
         }
     }
 }
@@ -120,12 +122,12 @@ fun ResumeLensApp() {
 
                 onFileSelected = { uri ->
                     analysisVm.setPendingImageUri(uri)
-                    nav.navigate(Screen.ResumeAnalysis.route)
+                    nav.navigate("resume_analysis")
                 },
 
                 onPdfSelected = { uri ->
                     analysisVm.setPendingPdfUri(uri)
-                    nav.navigate(Screen.ResumeAnalysis.route)
+                    nav.navigate("resume_analysis")
                 }
             )
 
@@ -136,16 +138,28 @@ fun ResumeLensApp() {
                 onBack = { nav.popBackStack() },
                 onPhotoTaken = { imageUri ->
                     analysisVm.setPendingImageUri(imageUri)
-                    nav.navigate(Screen.ResumeAnalysis.route) {
+                    nav.navigate("resume_analysis") {
                         popUpTo(Screen.Dashboard.route) { inclusive = false }
                     }
                 }
             )
         }
 
-        composable(Screen.ResumeAnalysis.route) {
+        composable(
+            route = "resume_analysis?analysisId={analysisId}",
+            arguments = listOf(
+                navArgument("analysisId") { 
+                    type = NavType.StringType
+                    nullable = true
+                    defaultValue = null
+                }
+            )
+        ) { backStackEntry ->
+            val analysisId = backStackEntry.arguments?.getString("analysisId")
+            
             ResumeAnalysisScreen(
                 viewModel = analysisVm,
+                analysisId = analysisId,
                 onBack = { nav.popBackStack() },
                 onImproveScore = {
                     // Loop back to PolishResume

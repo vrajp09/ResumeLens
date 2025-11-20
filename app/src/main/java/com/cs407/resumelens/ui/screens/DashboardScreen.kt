@@ -5,6 +5,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -198,16 +199,38 @@ fun DashboardScreen(
                     Spacer(Modifier.height(10.dp))
 
                     LazyColumn {
-                        items(3) { index ->
-                            ResumeHistoryItem(
-                                title = "Resume_Version_${3 - index}",
-                                corrections = listOf(5, 2, 7)[index],
-                                suggestions = listOf(6, 7, 10)[index],
-                                onClick = {
-                                    // Navigate to resume analysis with resume ID
-                                    onNavigateToResumeAnalysis("resume_${index + 1}")
+                        if (dashboardState.historyItems.isEmpty()) {
+                            item {
+                                Column(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(vertical = 32.dp),
+                                    horizontalAlignment = Alignment.CenterHorizontally
+                                ) {
+                                    Text(
+                                        text = "No resumes analyzed yet",
+                                        color = Color.Gray,
+                                        fontSize = 16.sp
+                                    )
+                                    Spacer(Modifier.height(8.dp))
+                                    Text(
+                                        text = "Tap the + button to get started!",
+                                        color = Color.Gray,
+                                        fontSize = 14.sp
+                                    )
                                 }
-                            )
+                            }
+                        } else {
+                            items(dashboardState.historyItems) { historyItem ->
+                                ResumeHistoryItem(
+                                    title = historyItem.versionLabel,
+                                    corrections = historyItem.correctionsCount,
+                                    suggestions = historyItem.suggestionsCount,
+                                    onClick = {
+                                        onNavigateToResumeAnalysis(historyItem.analysisId)
+                                    }
+                                )
+                            }
                         }
                     }
                 }

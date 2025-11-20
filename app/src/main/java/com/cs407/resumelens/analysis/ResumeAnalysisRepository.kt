@@ -120,4 +120,36 @@ class ResumeAnalysisRepository(
             }
         }
 
+    suspend fun getAnalysisById(analysisId: String): Result<AnalysisResponseDto> =
+        withContext(Dispatchers.IO) {
+            try {
+                val userId = authRepo.currentUser?.uid 
+                    ?: return@withContext Result.failure(Exception("User not authenticated"))
+                
+                val data = firestoreRepo.getResumeAnalysisById(userId, analysisId)
+                    .getOrThrow()
+                
+                // Parse Firestore data back into AnalysisResponseDto
+                @Suppress("UNCHECKED_CAST")
+                val suggestionsData = data["suggestions"] as? List<Map<String, Any>> ?: emptyList()
+                val suggestions = suggestionsData.map { s ->
+                    SuggestionDto(
+                        category = s["category"] as String,
+                        issue = s["issue"] as String,
+                        recommendation = s["recommendation"] as String
+                    )
+                }
+                
+                val response = AnalysisResponseDto(
+                    score = (data["score"] as Long).toInt(),
+                    summary = data["summary"] as String,
+                    suggestions = suggestions
+                )
+                
+                Result.success(response)
+            } catch (e: Exception) {
+                Result.failure(e)
+            }
+        }
+
 }
