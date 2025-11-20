@@ -55,3 +55,11 @@ backend/.env
 *.swp
 *.swo
 
+.idea/
+.gradle/
+build/
+app/build/
+local.properties
+
+.kotlinc/
+.kotlin/
