@@ -36,12 +36,14 @@ fun DashboardScreen(
     onNavigateToProfileSettings: () -> Unit = {},
     onNavigateToResumeTips: () -> Unit = {},
     onSignOut: () -> Unit = {},
-    userViewModel: UserViewModel = viewModel()
+    userViewModel: UserViewModel = viewModel(),
+    dashboardViewModel: com.cs407.resumelens.data.DashboardViewModel = viewModel()
 ) {
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val profileDrawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
     val userState by userViewModel.state.collectAsStateWithLifecycle()
+    val dashboardState by dashboardViewModel.state.collectAsStateWithLifecycle()
 
     ModalNavigationDrawer(
         drawerState = drawerState,
@@ -120,30 +122,52 @@ fun DashboardScreen(
                 ) {
 
                     Text("Total Resume Edits", fontSize = 16.sp, color = Color.Gray)
-                    Text("432", fontSize = 40.sp, fontWeight = FontWeight.Bold)
+                    Text(
+                        text = "${dashboardState.totalEdits}",
+                        fontSize = 40.sp,
+                        fontWeight = FontWeight.Bold
+                    )
 
                     Spacer(Modifier.height(12.dp))
 
-
-                    //Citation- https://github.com/developerchunk/BarGraph-JetpackCompose
-                    // Citation- https://stackoverflow.com/questions/66955541/create-list-of-lists-in-ktlin
-                    Row(
-                        horizontalArrangement = Arrangement.spacedBy(6.dp),
-                        verticalAlignment = Alignment.Bottom,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(120.dp)
-                            .padding(vertical = 8.dp)
-                    ) {
-                        val heights = listOf(40, 80, 60, 100, 90, 70, 50)
-                        heights.forEach {
-                            Box(
-                                modifier = Modifier
-                                    .weight(1f)
-                                    .height(it.dp)
-                                    .clip(RoundedCornerShape(3.dp))
-                                    .background(Color(0xFF9E9E9E))
+                    // Graph: Hide if empty, show bars if data exists
+                    if (dashboardState.graphBars.isEmpty()) {
+                        // Empty state message
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(120.dp)
+                                .padding(vertical = 8.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = "Upload your resume to see activity here.",
+                                color = Color.Gray,
+                                fontSize = 14.sp,
+                                textAlign = androidx.compose.ui.text.style.TextAlign.Center
                             )
+                        }
+                    } else {
+                        // Show bars
+                        //Citation- https://github.com/developerchunk/BarGraph-JetpackCompose
+                        // Citation- https://stackoverflow.com/questions/66955541/create-list-of-lists-in-ktlin
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(6.dp),
+                            verticalAlignment = Alignment.Bottom,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(120.dp)
+                                .padding(vertical = 8.dp)
+                        ) {
+                            dashboardState.graphBars.forEach { score ->
+                                Box(
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .height(maxOf(score.coerceIn(0, 100), 4).dp)
+                                        .clip(RoundedCornerShape(3.dp))
+                                        .background(Color(0xFF9E9E9E))
+                                )
+                            }
                         }
                     }
 
@@ -155,13 +179,13 @@ fun DashboardScreen(
                     ) {
                         StatCard(
                             title = "Resume Corrections",
-                            value = "30",
+                            value = "${dashboardState.totalCorrections}",
                             icon = R.drawable.resume_icon,
                             modifier = Modifier.weight(1f)
                         )
                         StatCard(
                             title = "AI Checker",
-                            value = "80%",
+                            value = "${dashboardState.aiCheckerPercent}%",
                             icon = R.drawable.resume_icon,
                             modifier = Modifier.weight(1f)
                         )

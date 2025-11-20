@@ -90,9 +90,13 @@ fun ResumeLensApp() {
         }
         composable(Screen.Dashboard.route) {
             val userVm: UserViewModel = viewModel()
+            val dashboardVm: com.cs407.resumelens.data.DashboardViewModel = viewModel()
+            
             LaunchedEffect(Unit) {
                 userVm.refreshProfile()
+                dashboardVm.loadDashboardData()
             }
+            
             DashboardScreen(
                 onNavigateToPolishResume = { nav.navigate(Screen.PolishResume.route) },
                 onNavigateToResumeAnalysis = { resumeId ->
@@ -105,7 +109,8 @@ fun ResumeLensApp() {
                     authVm.signOut()
                     nav.navigate(Screen.Welcome.route) { popUpTo(0) { inclusive = true } }
                 },
-                userViewModel = userVm
+                userViewModel = userVm,
+                dashboardViewModel = dashboardVm
             )
         }
         composable(Screen.PolishResume.route) {
