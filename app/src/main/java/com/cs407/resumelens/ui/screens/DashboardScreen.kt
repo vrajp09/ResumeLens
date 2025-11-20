@@ -7,6 +7,10 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.pullrefresh.PullRefreshIndicator
+import androidx.compose.material.pullrefresh.pullRefresh
+import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Menu
@@ -28,7 +32,7 @@ import com.cs407.resumelens.data.UserViewModel
 import com.cs407.resumelens.ui.components.ProfileMenu
 import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class)
 @Composable
 fun DashboardScreen(
     onNavigateToPolishResume: () -> Unit = {},
@@ -45,6 +49,24 @@ fun DashboardScreen(
     val scope = rememberCoroutineScope()
     val userState by userViewModel.state.collectAsStateWithLifecycle()
     val dashboardState by dashboardViewModel.state.collectAsStateWithLifecycle()
+    val snackbarHostState = remember { SnackbarHostState() }
+    
+    // Show error message in snackbar
+    LaunchedEffect(dashboardState.errorMessage) {
+        dashboardState.errorMessage?.let { error ->
+            snackbarHostState.showSnackbar(
+                message = error,
+                duration = SnackbarDuration.Short
+            )
+        }
+    }
+    
+    // Pull-to-refresh state
+    val refreshing = dashboardState.isLoading
+    val pullRefreshState = rememberPullRefreshState(
+        refreshing = refreshing,
+        onRefresh = { dashboardViewModel.refresh() }
+    )
 
     ModalNavigationDrawer(
         drawerState = drawerState,
@@ -113,16 +135,22 @@ fun DashboardScreen(
                             }
                         }
                     )
-                }
+                },
+                snackbarHost = { SnackbarHost(snackbarHostState) }
             ) { padding ->
-                Column(
+                Box(
                     modifier = Modifier
                         .fillMaxSize()
                         .padding(padding)
-                        .padding(horizontal = 20.dp, vertical = 10.dp)
+                        .pullRefresh(pullRefreshState)
                 ) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(horizontal = 20.dp, vertical = 10.dp)
+                    ) {
 
-                    Text("Total Resume Edits", fontSize = 16.sp, color = Color.Gray)
+                        Text("Total Resume Edits", fontSize = 16.sp, color = Color.Gray)
                     Text(
                         text = "${dashboardState.totalEdits}",
                         fontSize = 40.sp,
@@ -233,6 +261,26 @@ fun DashboardScreen(
                             }
                         }
                     }
+                }
+                    
+                    // Loading indicator overlay
+                    if (dashboardState.isLoading) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .background(Color.Black.copy(alpha = 0.3f)),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            CircularProgressIndicator(color = Color.White)
+                        }
+                    }
+                    
+                    // Pull-to-refresh indicator
+                    PullRefreshIndicator(
+                        refreshing = refreshing,
+                        state = pullRefreshState,
+                        modifier = Modifier.align(Alignment.TopCenter)
+                    )
                 }
             }
         }
