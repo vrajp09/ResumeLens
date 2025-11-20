@@ -54,4 +54,5 @@ backend/.env
 *.temp
 *.swp
 *.swo
+testresume.jpg
 
