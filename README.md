@@ -122,9 +122,19 @@ POST /analyze
 │           │           ├── ResumeLens.kt
 │           │           └── resumelens
 │           │               ├── MainActivity.kt
+│           │               ├── analysis
+│           │               │   ├── ResumeAnalysisRepository.kt
+│           │               │   └── ResumeAnalysisViewModel.kt
 │           │               ├── auth
 │           │               │   ├── AuthRepository.kt
 │           │               │   └── AuthViewModel.kt
+│           │               ├── data
+│           │               │   ├── DataViewModel.kt
+│           │               │   ├── FirestoreRepository.kt
+│           │               │   └── UserViewModel.kt
+│           │               ├── network
+│           │               │   ├── ApiClient.kt
+│           │               │   └── ResumeLensApi.kt
 │           │               └── ui
 │           │                   ├── components
 │           │                   │   ├── ErrorSnackbar.kt
@@ -158,11 +168,13 @@ POST /analyze
 │               │   ├── strings.xml
 │               │   └── themes.xml
 │               └── xml
+│                   └── network_security_config.xml
 ├── backend
 │   ├── credentials
+│   ├── llm_service.py
 │   ├── main.py
 │   ├── ocr_service.py
-│   ├── llm_service.py
+│   ├── pdf_service.py
 │   └── requirements.txt
 ├── build.gradle.kts
 ├── gradle
@@ -190,7 +202,8 @@ pip install -r requirements.txt
 
 #### 2. Configure Environment Variables
 
-Create a `.env` file in the `backend/` directory:
+* Create a `.env` file in the `backend/` directory.
+* Create a `credentials` folder in the `backend/` directory and add your `google_service_account.json` from the Google Cloud Console.
 
 ```bash
 GEMINI_API_KEY=your_gemini_api_key_here
@@ -241,7 +254,7 @@ uvicorn main:app --reload --host 0.0.0.0 --port 8000 # available at localhost:80
 - [x] Integrate Google Cloud Vision OCR
 - [x] Implement camera capture and image upload flow on frontend
 - [x] Build Gemini resume analysis logic
-- [ ] Create results display screen
+- [x] Create results display screen
 
 ### Milestones 3 & 4 (Weeks 4-5)
 
