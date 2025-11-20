@@ -70,4 +70,52 @@ class ResumeAnalysisRepository(
                 Result.failure(e)
             }
         }
+
+    suspend fun analyzePdfBytes(pdfBytes: ByteArray): Result<AnalysisResponseDto> =
+        withContext(Dispatchers.IO) {
+            try {
+                // ---- PDF extraction call ----
+                val requestFile = pdfBytes.toRequestBody("application/pdf".toMediaType())
+                val filePart = MultipartBody.Part.createFormData(
+                    name = "file",
+                    filename = "resume.pdf",
+                    body = requestFile
+                )
+
+                val ocr = api.extractPdf(filePart)
+
+                // ---- LLM analysis ----
+                val analysis = api.analyzeResume(
+                    AnalysisRequestDto(
+                        resume_text = ocr.extracted_text
+                    )
+                )
+
+                // ---- Save in Firestore ----
+                val userId = authRepo.currentUser?.uid
+                if (userId != null) {
+                    val analysisId = System.currentTimeMillis().toString()
+                    val data = mapOf(
+                        "analysisId" to analysisId,
+                        "source" to "pdf",
+                        "score" to analysis.score,
+                        "summary" to analysis.summary,
+                        "suggestions" to analysis.suggestions.map { s ->
+                            mapOf(
+                                "category" to s.category,
+                                "issue" to s.issue,
+                                "recommendation" to s.recommendation
+                            )
+                        },
+                        "createdAt" to Timestamp.now()
+                    )
+                    firestoreRepo.saveResumeAnalysis(userId, analysisId, data)
+                }
+
+                Result.success(analysis)
+            } catch (e: Exception) {
+                Result.failure(e)
+            }
+        }
+
 }

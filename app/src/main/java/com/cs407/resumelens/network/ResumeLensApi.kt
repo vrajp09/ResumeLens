@@ -31,6 +31,12 @@ data class AnalysisResponseDto(
 
 interface ResumeLensApi {
 
+    @Multipart
+    @POST("extract_pdf")
+    suspend fun extractPdf(
+        @Part file: MultipartBody.Part
+    ): OcrResponse
+
     // POST /extract  (multipart resume image)
     @Multipart
     @POST("extract")
@@ -43,4 +49,5 @@ interface ResumeLensApi {
     suspend fun analyzeResume(
         @Body request: AnalysisRequestDto
     ): AnalysisResponseDto
+
 }
