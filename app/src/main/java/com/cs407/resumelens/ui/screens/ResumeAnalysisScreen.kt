@@ -22,19 +22,46 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.cs407.resumelens.R
 import com.cs407.resumelens.ui.theme.ResumeLensTheme
+import android.content.Context
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.cs407.resumelens.analysis.ResumeAnalysisViewModel
+import com.cs407.resumelens.network.SuggestionDto
 
 // Citation- https://developer.android.com/reference/kotlin/androidx/compose/foundation/layout/Arrangement
 @Composable
 fun ResumeAnalysisScreen(
+    viewModel: ResumeAnalysisViewModel,
     onBack: () -> Unit = {},
     onImproveScore: () -> Unit = {}
 ) {
+    val uiState by viewModel.state.collectAsStateWithLifecycle()
+    val context = LocalContext.current
+
+    // Kick off analysis once when screen enters with a pending image
+    LaunchedEffect(Unit) {
+        val uri = viewModel.consumePendingImageUri()
+        if (uri != null) {
+            val bytes = context.contentResolver.openInputStream(uri)?.use { it.readBytes() }
+            if (bytes != null) {
+                viewModel.analyzeImageBytes(bytes)
+            }
+        }
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
             .padding(horizontal = 24.dp, vertical = 16.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+        // Top bar
         Row(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
@@ -54,35 +81,98 @@ fun ResumeAnalysisScreen(
             )
         }
 
-        Spacer(modifier = Modifier.height(40.dp))
+        Spacer(modifier = Modifier.height(24.dp))
 
-        Image(
-            painter = painterResource(id = R.drawable.resume_icon),
-            contentDescription = "Resume Icon",
-            modifier = Modifier.size(100.dp)
-        )
+        when {
+            uiState.loading -> {
+                Spacer(modifier = Modifier.height(40.dp))
+                CircularProgressIndicator()
+                Spacer(modifier = Modifier.height(16.dp))
+                Text(
+                    text = "Analyzing your resume...",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = Color.Gray
+                )
+            }
 
-        Spacer(modifier = Modifier.height(16.dp))
+            uiState.error != null -> {
+                Spacer(modifier = Modifier.height(40.dp))
+                Text(
+                    text = uiState.error ?: "",
+                    color = Color.Red,
+                    style = MaterialTheme.typography.bodyMedium
+                )
+            }
 
-        Text(
-            text = "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
-            color = Color.Gray,
-            fontSize = 14.sp,
-            modifier = Modifier.padding(horizontal = 16.dp),
-        )
+            uiState.score != null -> {
+                // Icon
+                Image(
+                    painter = painterResource(id = R.drawable.resume_icon),
+                    contentDescription = "Resume Icon",
+                    modifier = Modifier.size(100.dp)
+                )
 
-        Spacer(modifier = Modifier.height(32.dp))
+                Spacer(modifier = Modifier.height(16.dp))
 
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceEvenly
-        ) {
-            ScoreCircle(label = "Overall", score = 75)
-            ScoreCircle(label = "ATS", score = 60)
-            ScoreCircle(label = "Relevance", score = 90)
+                Text(
+                    text = uiState.summary ?: "",
+                    color = Color.Gray,
+                    fontSize = 14.sp,
+                    modifier = Modifier.padding(horizontal = 16.dp),
+                )
+
+                Spacer(modifier = Modifier.height(24.dp))
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceEvenly
+                ) {
+                    // For now we only have one numeric score from backend.
+                    ScoreCircle(label = "Overall", score = uiState.score ?: 0)
+                    ScoreCircle(label = "ATS", score = uiState.score ?: 0)       // placeholder
+                    ScoreCircle(label = "Relevance", score = uiState.score ?: 0) // placeholder
+                }
+
+                Spacer(modifier = Modifier.height(24.dp))
+
+                if (uiState.suggestions.isNotEmpty()) {
+                    Text(
+                        text = "Suggestions",
+                        fontWeight = FontWeight.SemiBold,
+                        fontSize = 16.sp,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 4.dp)
+                    )
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    LazyColumn(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .weight(1f, fill = false)
+                    ) {
+                        items(uiState.suggestions) { suggestion ->
+                            SuggestionItem(suggestion)
+                            Spacer(modifier = Modifier.height(8.dp))
+                        }
+                    }
+                } else {
+                    Spacer(modifier = Modifier.height(24.dp))
+                }
+            }
+
+            else -> {
+                // No image or result yet
+                Spacer(modifier = Modifier.height(40.dp))
+                Text(
+                    text = "Upload or capture a resume to get started.",
+                    color = Color.Gray
+                )
+            }
         }
 
-        Spacer(modifier = Modifier.height(48.dp))
+        Spacer(modifier = Modifier.height(24.dp))
 
         Button(
             onClick = onImproveScore,
@@ -96,6 +186,7 @@ fun ResumeAnalysisScreen(
         }
     }
 }
+
 
 @Composable
 private fun ScoreCircle(label: String, score: Int) {
@@ -124,10 +215,40 @@ private fun ScoreCircle(label: String, score: Int) {
     }
 }
 
+@Composable
+private fun SuggestionItem(suggestion: SuggestionDto) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(10.dp))
+            .background(Color(0xFFF5F5F5))
+            .padding(12.dp)
+    ) {
+        Text(
+            text = suggestion.category,
+            fontWeight = FontWeight.SemiBold,
+            fontSize = 14.sp
+        )
+        Spacer(modifier = Modifier.height(4.dp))
+        Text(
+            text = suggestion.issue,
+            color = Color.Gray,
+            fontSize = 13.sp
+        )
+        Spacer(modifier = Modifier.height(4.dp))
+        Text(
+            text = suggestion.recommendation,
+            fontSize = 13.sp
+        )
+    }
+}
+
+
 @Preview(showBackground = true, showSystemUi = true)
 @Composable
 fun PreviewResumeAnalysisScreen() {
     ResumeLensTheme {
-        ResumeAnalysisScreen()
+        val fakeVm = com.cs407.resumelens.analysis.ResumeAnalysisViewModel()
+        ResumeAnalysisScreen(viewModel = fakeVm)
     }
 }
