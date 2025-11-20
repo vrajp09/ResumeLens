@@ -6,6 +6,7 @@ import com.cs407.resumelens.network.AnalysisRequestDto
 import com.cs407.resumelens.network.AnalysisResponseDto
 import com.cs407.resumelens.network.ApiClient
 import com.cs407.resumelens.network.ResumeLensApi
+import com.cs407.resumelens.network.SuggestionDto
 import com.google.firebase.Timestamp
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -132,7 +133,7 @@ class ResumeAnalysisRepository(
                 // Parse Firestore data back into AnalysisResponseDto
                 @Suppress("UNCHECKED_CAST")
                 val suggestionsData = data["suggestions"] as? List<Map<String, Any>> ?: emptyList()
-                val suggestions = suggestionsData.map { s ->
+                val suggestions = suggestionsData.map { s: Map<String, Any> ->
                     SuggestionDto(
                         category = s["category"] as String,
                         issue = s["issue"] as String,
