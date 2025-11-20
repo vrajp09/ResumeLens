@@ -1,5 +1,6 @@
 package com.cs407.resumelens.ui.screens
 
+import androidx.compose.ui.platform.LocalContext
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -36,15 +37,24 @@ import com.cs407.resumelens.ui.theme.ResumeLensTheme
 fun PolishResumeScreen(
     onBack: () -> Unit = {},
     onContinue: () -> Unit = {},
-    onFileSelected: (Uri) -> Unit = {}
-) {
-    val filePickerLauncher = rememberLauncherForActivityResult(
+    onFileSelected: (Uri) -> Unit = {},
+    onPdfSelected: (Uri) -> Unit = {}
+)
+ {
+     val context = LocalContext.current
+     val filePickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { uri: Uri? ->
-        uri?.let { 
-            onFileSelected(it)
+        if (uri != null) {
+            val type = context.contentResolver.getType(uri) ?: ""
+            if (type == "application/pdf") {
+                onPdfSelected(uri)
+            } else if (type.startsWith("image/")) {
+                onFileSelected(uri)
+            }
         }
     }
+
 
     Scaffold(
         topBar = {
@@ -87,7 +97,7 @@ fun PolishResumeScreen(
                     .clip(RoundedCornerShape(16.dp))
                     .border(2.dp, Color(0xFF00B67A), RoundedCornerShape(16.dp))
                     .background(Color.White)
-                    .clickable { filePickerLauncher.launch("image/*") },
+                    .clickable { filePickerLauncher.launch("*/*")},
                 contentAlignment = Alignment.Center
             ) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {

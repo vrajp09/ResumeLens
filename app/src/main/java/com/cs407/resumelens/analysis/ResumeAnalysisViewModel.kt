@@ -25,6 +25,20 @@ class ResumeAnalysisViewModel(
 
     private var pendingImageUri: Uri? = null
 
+    private var pendingPdfUri: Uri? = null
+
+    fun setPendingPdfUri(uri: Uri?) {
+        pendingPdfUri = uri
+        _state.value = ResumeAnalysisUiState()
+    }
+
+    fun consumePendingPdfUri(): Uri? {
+        val current = pendingPdfUri
+        pendingPdfUri = null
+        return current
+    }
+
+
     fun setPendingImageUri(uri: Uri?) {
         pendingImageUri = uri
         _state.value = ResumeAnalysisUiState()
@@ -58,6 +72,31 @@ class ResumeAnalysisViewModel(
                 }
         }
     }
+
+    fun analyzePdfBytes(pdfBytes: ByteArray) {
+        viewModelScope.launch {
+            _state.value = _state.value.copy(loading = true, error = null)
+
+            repository.analyzePdfBytes(pdfBytes)
+                .onSuccess { resp ->
+                    _state.value = _state.value.copy(
+                        loading = false,
+                        score = resp.score,
+                        summary = resp.summary,
+                        suggestions = resp.suggestions
+                    )
+                }
+                .onFailure { e ->
+                    _state.value = _state.value.copy(
+                        loading = false,
+                        error = e.message ?: "Failed to analyze PDF."
+                    )
+                }
+        }
+    }
+
+
+
 
     fun clearError() {
         _state.value = _state.value.copy(error = null)
