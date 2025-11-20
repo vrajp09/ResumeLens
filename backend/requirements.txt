@@ -5,3 +5,4 @@ google-cloud-vision
 pillow
 google-generativeai
 python-dotenv
+pdfplumber
