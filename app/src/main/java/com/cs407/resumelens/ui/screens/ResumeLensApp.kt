@@ -11,6 +11,7 @@ import androidx.navigation.compose.rememberNavController
 import com.cs407.resumelens.auth.AuthViewModel
 import com.cs407.resumelens.data.UserViewModel
 
+
 sealed class Screen(val route: String) {
     // Auth Flow
     data object Welcome : Screen("welcome")
@@ -37,10 +38,13 @@ sealed class Screen(val route: String) {
     }
 }
 
+
 @Composable
 fun ResumeLensApp() {
     val nav = rememberNavController()
     val authVm: AuthViewModel = viewModel()
+    val analysisVm: com.cs407.resumelens.analysis.ResumeAnalysisViewModel = viewModel()
+
 
     // Collect the flow into Compose state (lifecycle-aware)
     val authState by authVm.state.collectAsStateWithLifecycle()
@@ -54,7 +58,7 @@ fun ResumeLensApp() {
         }
     }
 
-    // Use a fixed start destination; we'll navigate above if already signed in
+    // Use a fixed start destination; navigate above if already signed in
     NavHost(
         navController = nav,
         startDestination = Screen.Welcome.route
@@ -71,8 +75,8 @@ fun ResumeLensApp() {
                 onSignUpComplete = { email, password, fullName, username ->
                     authVm.signUp(email, password, fullName, username)
                 },
-                errorText = authState.error,          // <-- wire VM error into screen
-                onClearError = authVm::clearError    // <-- allow screen to clear it
+                errorText = authState.error,          // wire VM error into screen
+                onClearError = authVm::clearError    // allow screen to clear it
             )
         }
         composable(Screen.LogIn.route) {
@@ -109,26 +113,30 @@ fun ResumeLensApp() {
                 onBack = { nav.popBackStack() },
                 onContinue = { nav.navigate(Screen.Camera.route) },
                 onFileSelected = { uri ->
-                    // File picker path - navigate to results with selected image
+                    // Image picker path
+                    analysisVm.setPendingImageUri(uri)
                     nav.navigate(Screen.ResumeAnalysis.route) {
                         popUpTo(Screen.Dashboard.route) { inclusive = false }
                     }
                 }
             )
         }
+
         composable(Screen.Camera.route) {
             CameraScreen(
                 onBack = { nav.popBackStack() },
                 onPhotoTaken = { imageUri ->
-                    // nav back to ResumeAnalysis.kt after photo is taken
+                    analysisVm.setPendingImageUri(imageUri)
                     nav.navigate(Screen.ResumeAnalysis.route) {
                         popUpTo(Screen.Dashboard.route) { inclusive = false }
                     }
                 }
             )
         }
+
         composable(Screen.ResumeAnalysis.route) {
             ResumeAnalysisScreen(
+                viewModel = analysisVm,
                 onBack = { nav.popBackStack() },
                 onImproveScore = {
                     // Loop back to PolishResume
@@ -138,6 +146,7 @@ fun ResumeLensApp() {
                 }
             )
         }
+
         composable(Screen.ProfileSettings.route) {
             val userVm: UserViewModel = viewModel()
             LaunchedEffect(Unit) {
