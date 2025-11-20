@@ -33,9 +33,6 @@ captures/
 .kotlinc_helpers/
 kotlin-errors.txt
 
-*.jpg
-*.jpeg
-*.png
 
 *.log
 
