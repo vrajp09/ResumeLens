@@ -53,6 +53,7 @@ class ResumeAnalysisRepository(
                         "analysisId" to analysisId,
                         "score" to analysis.score,
                         "summary" to analysis.summary,
+                        "resumeText" to ocr.extracted_text, // Store extracted text for future reference
                         "suggestions" to analysis.suggestions.map { s ->
                             mapOf(
                                 "category" to s.category,
@@ -60,6 +61,7 @@ class ResumeAnalysisRepository(
                                 "recommendation" to s.recommendation
                             )
                         },
+                        "suggestionCount" to analysis.suggestions.size, // For easy querying
                         "createdAt" to Timestamp.now()
                     )
                     firestoreRepo.saveResumeAnalysis(userId, analysisId, data)
