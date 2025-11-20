@@ -68,6 +68,29 @@ class FirestoreRepository(
         }
     }
 
+    // Get a single resume analysis by ID
+    suspend fun getResumeAnalysisById(
+        userId: String,
+        analysisId: String
+    ): Result<Map<String, Any>> {
+        return try {
+            val document = db.collection("users")
+                .document(userId)
+                .collection("resume_analyses")
+                .document(analysisId)
+                .get()
+                .await()
+            
+            if (document.exists()) {
+                Result.success(document.data!!)
+            } else {
+                Result.failure(Exception("Analysis not found"))
+            }
+        } catch (e: FirebaseFirestoreException) {
+            Result.failure(e)
+        }
+    }
+
     // Real-time listener for resume analyses
     fun observeResumeAnalyses(
         userId: String,

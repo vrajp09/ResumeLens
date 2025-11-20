@@ -38,6 +38,7 @@ import com.cs407.resumelens.network.SuggestionDto
 @Composable
 fun ResumeAnalysisScreen(
     viewModel: ResumeAnalysisViewModel,
+    analysisId: String? = null,
     onBack: () -> Unit = {},
     onImproveScore: () -> Unit = {}
 ) {
@@ -45,7 +46,13 @@ fun ResumeAnalysisScreen(
     val context = LocalContext.current
 
     LaunchedEffect(Unit) {
-
+        // Check if loading existing analysis
+        if (analysisId != null) {
+            viewModel.loadAnalysisById(analysisId)
+            return@LaunchedEffect
+        }
+        
+        // Handle new analysis from camera/PDF
         val imgUri = viewModel.consumePendingImageUri()
         if (imgUri != null) {
             val bytes = context.contentResolver.openInputStream(imgUri)?.readBytes()

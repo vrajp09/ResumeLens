@@ -98,6 +98,28 @@ class ResumeAnalysisViewModel(
 
 
 
+    fun loadAnalysisById(analysisId: String) {
+        viewModelScope.launch {
+            _state.value = _state.value.copy(loading = true, error = null)
+            
+            repository.getAnalysisById(analysisId)
+                .onSuccess { resp ->
+                    _state.value = _state.value.copy(
+                        loading = false,
+                        score = resp.score,
+                        summary = resp.summary,
+                        suggestions = resp.suggestions
+                    )
+                }
+                .onFailure { e ->
+                    _state.value = _state.value.copy(
+                        loading = false,
+                        error = e.message ?: "Failed to load analysis"
+                    )
+                }
+        }
+    }
+
     fun clearError() {
         _state.value = _state.value.copy(error = null)
     }
