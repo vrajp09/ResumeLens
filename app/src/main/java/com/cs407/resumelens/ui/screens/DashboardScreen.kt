@@ -7,10 +7,6 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.material.pullrefresh.PullRefreshIndicator
-import androidx.compose.material.pullrefresh.pullRefresh
-import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Menu
@@ -32,7 +28,7 @@ import com.cs407.resumelens.data.UserViewModel
 import com.cs407.resumelens.ui.components.ProfileMenu
 import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DashboardScreen(
     onNavigateToPolishResume: () -> Unit = {},
@@ -60,13 +56,6 @@ fun DashboardScreen(
             )
         }
     }
-    
-    // Pull-to-refresh state
-    val refreshing = dashboardState.isLoading
-    val pullRefreshState = rememberPullRefreshState(
-        refreshing = refreshing,
-        onRefresh = { dashboardViewModel.refresh() }
-    )
 
     ModalNavigationDrawer(
         drawerState = drawerState,
@@ -142,7 +131,6 @@ fun DashboardScreen(
                     modifier = Modifier
                         .fillMaxSize()
                         .padding(padding)
-                        .pullRefresh(pullRefreshState)
                 ) {
                     Column(
                         modifier = Modifier
@@ -274,13 +262,6 @@ fun DashboardScreen(
                             CircularProgressIndicator(color = Color.White)
                         }
                     }
-                    
-                    // Pull-to-refresh indicator
-                    PullRefreshIndicator(
-                        refreshing = refreshing,
-                        state = pullRefreshState,
-                        modifier = Modifier.align(Alignment.TopCenter)
-                    )
                 }
             }
         }
