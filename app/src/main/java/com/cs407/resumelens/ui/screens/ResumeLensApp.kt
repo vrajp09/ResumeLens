@@ -30,6 +30,10 @@ sealed class Screen(val route: String) {
     
     // Profile & Settings
     data object ProfileSettings : Screen("profile_settings")
+
+    data object Security : Screen("security")
+
+    data object HelpCenter : Screen("help_center")
     
     // Helpers for navigation arguments
     companion object {
@@ -191,8 +195,19 @@ fun ResumeLensApp() {
                     authVm.signOut()
                     nav.navigate(Screen.Welcome.route) { popUpTo(0) { inclusive = true } }
                 },
+                onNavigateToSecurity = { nav.navigate(Screen.Security.route) }, // <-- Add this
+                onNavigateToHelpCenter = { nav.navigate(Screen.HelpCenter.route) },
                 userViewModel = userVm
             )
         }
+
+        composable(Screen.Security.route) {
+            SecurityScreen(onBack = { nav.popBackStack() })
+        }
+
+        composable(Screen.HelpCenter.route) {
+            HelpCenterScreen(onBack = { nav.popBackStack() })
+        }
+
     }
 }
