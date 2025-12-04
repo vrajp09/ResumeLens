@@ -40,7 +40,7 @@ fun HelpCenterScreen(onBack: () -> Unit) {
             item {
                 FAQItem(
                     question = "How do I upload a resume?",
-                    answer = "From the dashboard, tap the '+' button. You can then choose to upload a file (PDF, JPG, PNG) from your device or take a photo with your camera."
+                    answer = "From the dashboard, tap the '+' button. You can then choose to upload a resume file (PDF, JPG, PNG) from your device or take a photo of your resume with your camera."
                 )
             }
             item {

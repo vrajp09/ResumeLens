@@ -59,6 +59,10 @@ fun DashboardScreen(
         }
     }
 
+    LaunchedEffect(Unit) {
+        dashboardViewModel.loadDashboardData()
+    }
+
     ModalNavigationDrawer(
         drawerState = drawerState,
         drawerContent = {
