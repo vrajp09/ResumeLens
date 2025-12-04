@@ -48,7 +48,11 @@ fun DashboardScreen(
     val userState by userViewModel.state.collectAsStateWithLifecycle()
     val dashboardState by dashboardViewModel.state.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
-    
+
+    LaunchedEffect(Unit) {
+        dashboardViewModel.loadDashboardData()
+    }
+
     // Show error message in snackbar
     LaunchedEffect(dashboardState.errorMessage) {
         dashboardState.errorMessage?.let { error ->
@@ -247,7 +251,7 @@ fun DashboardScreen(
                         }
                     }
                 }
-                    
+
                     // Loading indicator overlay
                     if (dashboardState.isLoading) {
                         Box(
@@ -450,13 +454,5 @@ private fun ResumeHistoryItem(
                 fontSize = 14.sp
             )
         }
-    }
-}
-
-@Preview(showBackground = true, showSystemUi = true)
-@Composable
-fun PreviewDashboardScreen() {
-    com.cs407.resumelens.ui.theme.ResumeLensTheme {
-        DashboardScreen()
     }
 }
