@@ -33,9 +33,12 @@ import androidx.compose.material3.ModalDrawerSheet
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DashboardScreen(
+    onNavigateToProfile: () -> Unit ={},
     onNavigateToPolishResume: () -> Unit = {},
+
     onNavigateToResumeAnalysis: (String?) -> Unit = {},
     onOpenProfile: () -> Unit = {},
+
     onNavigateToProfileSettings: () -> Unit = {},
     onNavigateToResumeTips: () -> Unit = {},
     onSignOut: () -> Unit = {},
@@ -71,10 +74,8 @@ fun DashboardScreen(
                     userName = userState.userProfile?.name ?: "User",
                     username = userState.userProfile?.username ?: "",
                     onProfileClick = {
-                        scope.launch {
-                            drawerState.close()
-                            profileDrawerState.open()
-                        }
+                        scope.launch { drawerState.close() }
+                        onNavigateToProfile()
                     },
                     onSettingsClick = {
                         scope.launch { drawerState.close() }

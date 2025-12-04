@@ -29,6 +29,8 @@ sealed class Screen(val route: String) {
     data object ResumeAnalysis : Screen("resume_analysis")
     
     // Profile & Settings
+
+    data object Profile : Screen("profile")
     data object ProfileSettings : Screen("profile_settings")
     data object ResumeTips : Screen("resume_tips")
     data object Security : Screen("security")
@@ -113,6 +115,7 @@ fun ResumeLensApp() {
             val dashboardVm: com.cs407.resumelens.data.DashboardViewModel = viewModel()
             
             DashboardScreen(
+                onNavigateToProfile = { nav.navigate(Screen.Profile.route) },
                 onNavigateToPolishResume = { nav.navigate(Screen.PolishResume.route) },
                 onNavigateToResumeAnalysis = { resumeId ->
                     nav.navigate(Screen.resumeAnalysis(resumeId))
@@ -128,6 +131,20 @@ fun ResumeLensApp() {
                 dashboardViewModel = dashboardVm
             )
         }
+
+        composable(Screen.Profile.route) {
+            val userVm: UserViewModel = viewModel()
+            LaunchedEffect(Unit) {
+                userVm.refreshProfile()
+            }
+
+            ProfileScreen(
+                onBack = { nav.popBackStack() },
+                onNavigateToSettings = { nav.navigate(Screen.ProfileSettings.route) },
+                userViewModel = userVm
+            )
+        }
+
         composable(Screen.PolishResume.route) {
             PolishResumeScreen(
                 onBack = { nav.popBackStack() },

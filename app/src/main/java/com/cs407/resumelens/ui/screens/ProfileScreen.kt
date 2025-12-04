@@ -2,9 +2,11 @@ package com.cs407.resumelens.ui.screens
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -24,8 +26,11 @@ import com.cs407.resumelens.data.UserViewModel
 
 @Composable
 fun ProfileScreen(
-    userViewModel: UserViewModel = viewModel()
-) {
+    userViewModel: UserViewModel = viewModel(),
+    onBack: () -> Unit = {},
+    onNavigateToSettings: () -> Unit = {}
+)
+ {
     val userState by userViewModel.state.collectAsStateWithLifecycle()
     
     LaunchedEffect(Unit) {
@@ -38,22 +43,29 @@ fun ProfileScreen(
             .padding(horizontal = 24.dp, vertical = 16.dp)
     ) {
         Row(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 12.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Icon(
-                painter = painterResource(id = R.drawable.back_button),
-                contentDescription = "Back",
-                tint = Color.Black,
-                modifier = Modifier.size(28.dp)
-            )
-            Icon(
-                painter = painterResource(id = R.drawable.settings_icon),
-                contentDescription = "Settings",
-                tint = Color.Black,
-                modifier = Modifier.size(28.dp)
-            )
+            IconButton(onClick = onBack) {
+                Icon(
+                    painter = painterResource(id = R.drawable.back_button),
+                    contentDescription = "Back",
+                    tint = Color.Black,
+                    modifier = Modifier.size(28.dp)
+                )
+            }
+
+            IconButton(onClick = onNavigateToSettings) {
+                Icon(
+                    painter = painterResource(id = R.drawable.settings_icon),
+                    contentDescription = "Settings",
+                    tint = Color.Black,
+                    modifier = Modifier.size(28.dp)
+                )
+            }
         }
 
         Spacer(Modifier.height(24.dp))
