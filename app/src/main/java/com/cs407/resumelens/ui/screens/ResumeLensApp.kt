@@ -30,9 +30,8 @@ sealed class Screen(val route: String) {
     
     // Profile & Settings
     data object ProfileSettings : Screen("profile_settings")
-
+    data object ResumeTips : Screen("resume_tips")
     data object Security : Screen("security")
-
     data object HelpCenter : Screen("help_center")
     
     // Helpers for navigation arguments
@@ -120,7 +119,7 @@ fun ResumeLensApp() {
                 },
                 onOpenProfile = { /* Profile handled as drawer overlay */ },
                 onNavigateToProfileSettings = { nav.navigate(Screen.ProfileSettings.route) },
-                onNavigateToResumeTips = { /* TODO: Implement resume tips screen */ },
+                onNavigateToResumeTips = { nav.navigate(Screen.ResumeTips.route) },
                 onSignOut = {
                     authVm.signOut()
                     nav.navigate(Screen.Welcome.route) { popUpTo(0) { inclusive = true } }
@@ -207,6 +206,10 @@ fun ResumeLensApp() {
 
         composable(Screen.HelpCenter.route) {
             HelpCenterScreen(onBack = { nav.popBackStack() })
+        }
+
+        composable(Screen.ResumeTips.route) {
+            ResumeTipsScreen(onBack = { nav.popBackStack() })
         }
 
     }
