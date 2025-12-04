@@ -20,10 +20,9 @@ class Suggestion(BaseModel):
 class AnalysisRequest(BaseModel):
     resume_text: str = Field(..., min_length=50, max_length=10000)
     target_role: Optional[str] = Field(
-        None,
-        description="Optional role or industry focus to tailor suggestions."
+        default="Software Engineer",
+        description="Target role for tailored suggestions. Defaults to Software Engineer."
     )
-
 
 class AnalysisResponse(BaseModel):
     score: int = Field(..., ge=0, le=100)
@@ -40,10 +39,17 @@ SYSTEM_PROMPT = (
     "- 70-79: Decent resume. Acceptable but has notable gaps in ATS optimization or content quality.\n"
     "- 60-69: Needs improvement. Missing key ATS elements, weak descriptions, or formatting issues.\n"
     "- 50-59: Poor resume. Major ATS failures, vague content, unprofessional presentation.\n"
-    "- Below 50: Severely flawed. Incomplete, illegible, or fundamentally broken resume.\n\n"
+    "- 40-49: Severely flawed. Missing major sections, minimal content, or very poor quality.\n"
+    "- Below 40: Broken/Incomplete. Text cuts off mid-sentence, severely corrupted, or only fragments present.\n\n"
     
-    "IMPORTANT: If the resume is incomplete, illegible, or only shows a fragment (like just a corner), "
-    "score it below 40 and note the incompleteness.\n\n"
+    "CRITICAL - DETECTING BROKEN RESUMES:\n"
+    "Before scoring, check if the resume is fundamentally broken or incomplete. Score BELOW 40 if you see:\n"
+    "- Text that cuts off mid-sentence or mid-word (e.g., ends with 'cliening I, ComputerSy')\n"
+    "- Severe corruption or garbled text that makes content unintelligible\n"
+    "- Only shows a tiny fragment (like just a corner or header)\n"
+    "- Missing 2+ major sections entirely (Education AND Experience, or Experience AND Skills)\n"
+    "- Suspiciously short content (< 100 words for what claims to be a full resume)\n"
+    "If ANY of these apply, score 30-40 and clearly state the resume is incomplete/corrupted.\n\n"
     
     "OCR ARTIFACTS: The text may contain minor OCR scanning artifacts (concatenated words, spacing issues). "
     "These have been partially cleaned but may still exist. DO NOT penalize for minor OCR artifacts - focus on "
@@ -51,26 +57,37 @@ SYSTEM_PROMPT = (
     "that affects readability or ATS parsing, not isolated OCR errors.\n\n"
     
     "SUGGESTION RULES (based on score):\n"
-    "- Score 0-50: Provide 8-12 suggestions (critical issues)\n"
-    "- Score 51-70: Provide 5-8 suggestions (significant improvements needed)\n"
-    "- Score 71-85: Provide 3-5 suggestions (moderate improvements)\n"
-    "- Score 86-100: Provide 1-3 suggestions (minor refinements)\n\n"
+    "- Score 0-50: Provide 10-12 suggestions (critical issues)\n"
+    "- Score 51-70: Provide 7-10 suggestions (significant improvements needed)\n"
+    "- Score 71-79: Provide 3-6 suggestions (moderate improvements)\n"
+    "- Score 80-89: Provide 2-4 suggestions (minor refinements - only high-impact changes)\n"
+    "- Score 90-100: Provide 1-2 suggestions (very minor polish - only if truly necessary)\n\n"
     
     "Each suggestion must have:\n"
     "- category: Area of concern (e.g., 'ATS Keywords', 'Content Quality', 'Experience Description', 'Structure')\n"
     "- issue: Specific problem identified (focus on substance, not OCR artifacts)\n"
     "- recommendation: Concrete, actionable fix\n\n"
     
-    "AVOID: Do not create suggestions about minor typos, spacing issues, or OCR artifacts. Focus on:\n"
-    "- Missing ATS keywords for the target role\n"
-    "- Weak or vague achievement descriptions\n"
-    "- Lack of quantifiable metrics\n"
-    "- Missing important sections (summary, skills grouping)\n"
-    "- Poor action verb usage\n"
-    "- Content that doesn't align with the target role\n\n"
+    "FOCUS AREAS (prioritize high-impact suggestions):\n"
+    "- Missing critical ATS keywords for the target role (not generic buzzwords)\n"
+    "- Weak or vague achievement descriptions that lack impact\n"
+    "- Missing quantifiable metrics where they would add value\n"
+    "- Missing important sections (e.g., summary for experienced candidates)\n"
+    "- Content that doesn't align well with the target role\n\n"
     
-    "Return ONLY valid JSON with this exact structure:\n"
+    "AVOID (especially for scores 80+):\n"
+    "- Minor formatting preferences or style suggestions\n"
+    "- Over-optimization (e.g., 'mention X in every bullet point')\n"
+    "- Restructuring suggestions when current structure is functional\n"
+    "- Nitpicky details that don't materially improve ATS performance\n"
+    "- Redundant suggestions (e.g., listing skills already in the skills section)\n\n"
+    
+    "CRITICAL OUTPUT REQUIREMENT:\n"
+    "Your ENTIRE response must be ONLY valid JSON. No explanations before or after.\n"
+    "Start your response with { and end with }. Nothing else.\n"
+    "Required structure:\n"
     '{"score": <number>, "summary": "<2-3 sentences>", "suggestions": [...]}\n\n'
+    "If the resume is broken/incomplete, still return valid JSON with a low score (30-45) and note the issues in the summary.\n\n"
     "Be honest, thorough, and constructively critical about content - not OCR errors."
 )
 
@@ -92,22 +109,41 @@ def clean_ocr_text(text: str) -> str:
     
     return text.strip()
 
-
 def build_prompt(payload: AnalysisRequest) -> str:
+    
     # Clean OCR artifacts before analysis
+    original_text = payload.resume_text.strip()
     cleaned_text = clean_ocr_text(payload.resume_text)
+    
+    # General checks for broken resumes
+    is_very_short = len(original_text) < 400
+    word_count = len(original_text.split())
+    is_minimal_content = word_count < 80
+    
+    text_looks_broken = is_very_short or is_minimal_content 
     
     base = [
         SYSTEM_PROMPT,
         "",
+    ]
+    
+    if text_looks_broken:
+        base.extend([
+            "WARNING: This resume appears unusually short or may be incomplete.",
+            "Carefully verify the resume ends properly and contains complete sections.",
+            "",
+        ])
+    
+    base.extend([
         "Analyze the following resume text.",
-        f"Target role: {payload.target_role}" if payload.target_role else "Target role: General/Any position",
+        f"Target role: {payload.target_role}",
         "",
         "Resume text:",
         cleaned_text,
         "",
         "Provide your analysis following the scoring guidelines and suggestion rules above.",
-    ]
+    ])
+    
     return "\n".join(base)
 
 # escapes all control characters in our input to ensure valid JSON string values
@@ -160,10 +196,18 @@ def parse_response(response) -> dict:
     try:
         llm_output = response.text
     except Exception as e:
-        raise HTTPException(
-            status_code=502,
-            detail=f"Incorrect Gemini response format: {e}"
-        )
+        # Return fallback response instead of 502 error
+        return {
+            "score": 40,
+            "summary": "Unable to process LLM response. Please try again or re-upload your resume.",
+            "suggestions": [
+                {
+                    "category": "System Error",
+                    "issue": "The analysis service encountered an error processing your resume.",
+                    "recommendation": "Please try uploading your resume again. If the issue persists, ensure the resume is in a clear, readable format."
+                }
+            ]
+        }
 
     # remove all whitespace and backticks
     llm_output = llm_output.strip()
@@ -179,16 +223,28 @@ def parse_response(response) -> dict:
     try:
         parsed = json.loads(llm_output)
     except json.JSONDecodeError as e:
-        raise HTTPException(
-            status_code=502,
-            detail=f"Invalid JSON: {e}. Truncated repsonse: {llm_output[:150]}"
-        )
+        # LLM returned invalid JSON - return fallback instead of 502
+        return {
+            "score": 40,
+            "summary": "The resume analysis encountered a formatting issue. The resume may be incomplete or corrupted.",
+            "suggestions": [
+                {
+                    "category": "Resume Quality",
+                    "issue": "Unable to fully analyze the resume due to formatting or completeness issues.",
+                    "recommendation": "Please ensure your resume is complete and properly formatted. Try re-uploading a clear photo or PDF of your full resume."
+                },
+                {
+                    "category": "Content Completeness",
+                    "issue": "The resume appears to be incomplete or cut off.",
+                    "recommendation": "Verify that all sections (Education, Experience, Skills, Projects) are fully captured in the upload."
+                }
+            ]
+        }
     return parsed
 
 @gemini_router.get("/openai_health_check")
 def openai_health_check():
     return {"Message": "Gemini LLM endpoint is healthy."}
-
 
 @gemini_router.post("/analyze", response_model=AnalysisResponse)
 async def analyze_resume(payload: AnalysisRequest):
