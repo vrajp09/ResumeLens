@@ -27,6 +27,8 @@ import com.cs407.resumelens.R
 import com.cs407.resumelens.data.UserViewModel
 import com.cs407.resumelens.ui.components.ProfileMenu
 import kotlinx.coroutines.launch
+import androidx.compose.material3.ModalDrawerSheet
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -59,54 +61,49 @@ fun DashboardScreen(
 
     ModalNavigationDrawer(
         drawerState = drawerState,
-        //onDismissRequest = { scope.launch { drawerState.close() } },
         drawerContent = {
-            ProfileMenu(
-                userName = userState.userProfile?.name ?: "User",
-                username = userState.userProfile?.username ?: "",
-                onProfileClick = {
-                    scope.launch {
-                        drawerState.close()
-                        profileDrawerState.open()
+            ModalDrawerSheet {
+                ProfileMenu(
+                    userName = userState.userProfile?.name ?: "User",
+                    username = userState.userProfile?.username ?: "",
+                    onProfileClick = {
+                        scope.launch {
+                            drawerState.close()
+                            profileDrawerState.open()
+                        }
+                    },
+                    onSettingsClick = {
+                        scope.launch { drawerState.close() }
+                        onNavigateToProfileSettings()
+                    },
+                    onResumeTipsClick = {
+                        scope.launch { drawerState.close() }
+                        onNavigateToResumeTips()
+                    },
+                    onLogoutClick = {
+                        scope.launch { drawerState.close() }
+                        onSignOut()
                     }
-                },
-                onSettingsClick = {
-                    scope.launch {
-                        drawerState.close()
-                    }
-                    onNavigateToProfileSettings()
-                },
-                onResumeTipsClick = {
-                    scope.launch {
-                        drawerState.close()
-                    }
-                    onNavigateToResumeTips()
-                },
-                onLogoutClick = {
-                    scope.launch {
-                        drawerState.close()
-                    }
-                    onSignOut()
-                }
-            )
+                )
+            }
         }
     ) {
         // Profile sidebar drawer
         ModalNavigationDrawer(
             drawerState = profileDrawerState,
             drawerContent = {
-                ProfileSidebar(
-                    userName = userState.userProfile?.name ?: "User",
-                    userEmail = userState.userProfile?.email ?: "",
-                    username = userState.userProfile?.username ?: "",
-                    onClose = { scope.launch { profileDrawerState.close() } },
-                    onNavigateToSettings = {
-                        scope.launch {
-                            profileDrawerState.close()
+                ModalDrawerSheet {
+                    ProfileSidebar(
+                        userName = userState.userProfile?.name ?: "User",
+                        userEmail = userState.userProfile?.email ?: "",
+                        username = userState.userProfile?.username ?: "",
+                        onClose = { scope.launch { profileDrawerState.close() } },
+                        onNavigateToSettings = {
+                            scope.launch { profileDrawerState.close() }
+                            onNavigateToProfileSettings()
                         }
-                        onNavigateToProfileSettings()
-                    }
-                )
+                    )
+                }
             }
         ) {
             Scaffold(
