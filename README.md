@@ -242,10 +242,10 @@ uvicorn main:app --reload --host 0.0.0.0 --port 8000 # available at localhost:80
 
 | Name                | Week 4 Role            | Email                 |
 | ------------------- | ---------------------- | --------------------- |
-| Mahesh Ramakrishnan | Observer/Documentation | mramakrishn3@wisc.edu |
+| Mahesh Ramakrishnan | Backend Lead           | mramakrishn3@wisc.edu |
 | Akash Mohan         | Project Coordinator    | amohan29@wisc.edu     |
-| Vraj Patel          | Frontend Lead          | vpatel46@wisc.edu     |
-| Manan Chand         | Backend Lead           | mtchand@wisc.edu      |
+| Vraj Patel          | Observer/Documentation | vpatel46@wisc.edu     |
+| Manan Chand         | Frontend Lead          | mtchand@wisc.edu      |
 
 
 ## Timeline
@@ -267,6 +267,7 @@ uvicorn main:app --reload --host 0.0.0.0 --port 8000 # available at localhost:80
 
 ### Milestones 3 & 4 (Weeks 4-5)
 
+- [x] Prompt adjustments
 - [ ] Error handling and edge cases
 - [ ] UI/UX refinements
 - [ ] Performance optimization
