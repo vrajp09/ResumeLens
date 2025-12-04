@@ -5,6 +5,7 @@ from dotenv import load_dotenv
 from pydantic import BaseModel, Field, ValidationError
 from typing import List, Optional
 import json
+import re
 import os
 
 load_dotenv()
@@ -15,7 +16,6 @@ class Suggestion(BaseModel):
     category: str
     issue: str
     recommendation: str
-
 
 class AnalysisRequest(BaseModel):
     resume_text: str = Field(..., min_length=50, max_length=10000)
@@ -28,16 +28,50 @@ class AnalysisRequest(BaseModel):
 class AnalysisResponse(BaseModel):
     score: int = Field(..., ge=0, le=100)
     summary: str
-    suggestions: List[Suggestion]
+    suggestions: List[Suggestion] = Field(..., min_items=1, max_items=15)
 
 GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-2.5-flash-lite")
-MAX_SUGGESTIONS = 6
 SYSTEM_PROMPT = (
-    "You are a meticulous resume reviewer focused on ATS alignment. "
-    "Return JSON that includes a numeric score (0-100), a 2-3 sentence summary, "
-    "and up to six actionable suggestions. Each suggestion must have a "
-    "category, issue, and recommendation. Be specific, avoid fluff. "
-    "Return ONLY valid JSON, no additional text."
+    "You are a strict, experienced ATS resume reviewer. Be critical and detailed in your assessment.\n\n"
+    
+    "SCORING GUIDELINES (be strict):\n"
+    "- 90-100: Exceptional resume. Near-perfect ATS optimization, compelling content, pristine formatting. Very rare.\n"
+    "- 80-89: Strong resume. Good ATS compatibility, solid experience presentation, minor improvements needed.\n"
+    "- 70-79: Decent resume. Acceptable but has notable gaps in ATS optimization or content quality.\n"
+    "- 60-69: Needs improvement. Missing key ATS elements, weak descriptions, or formatting issues.\n"
+    "- 50-59: Poor resume. Major ATS failures, vague content, unprofessional presentation.\n"
+    "- Below 50: Severely flawed. Incomplete, illegible, or fundamentally broken resume.\n\n"
+    
+    "IMPORTANT: If the resume is incomplete, illegible, or only shows a fragment (like just a corner), "
+    "score it below 40 and note the incompleteness.\n\n"
+    
+    "OCR ARTIFACTS: The text may contain minor OCR scanning artifacts (concatenated words, spacing issues). "
+    "These have been partially cleaned but may still exist. DO NOT penalize for minor OCR artifacts - focus on "
+    "content quality, ATS optimization, and the substance of the resume. Only flag formatting if it's a pattern "
+    "that affects readability or ATS parsing, not isolated OCR errors.\n\n"
+    
+    "SUGGESTION RULES (based on score):\n"
+    "- Score 0-50: Provide 8-12 suggestions (critical issues)\n"
+    "- Score 51-70: Provide 5-8 suggestions (significant improvements needed)\n"
+    "- Score 71-85: Provide 3-5 suggestions (moderate improvements)\n"
+    "- Score 86-100: Provide 1-3 suggestions (minor refinements)\n\n"
+    
+    "Each suggestion must have:\n"
+    "- category: Area of concern (e.g., 'ATS Keywords', 'Content Quality', 'Experience Description', 'Structure')\n"
+    "- issue: Specific problem identified (focus on substance, not OCR artifacts)\n"
+    "- recommendation: Concrete, actionable fix\n\n"
+    
+    "AVOID: Do not create suggestions about minor typos, spacing issues, or OCR artifacts. Focus on:\n"
+    "- Missing ATS keywords for the target role\n"
+    "- Weak or vague achievement descriptions\n"
+    "- Lack of quantifiable metrics\n"
+    "- Missing important sections (summary, skills grouping)\n"
+    "- Poor action verb usage\n"
+    "- Content that doesn't align with the target role\n\n"
+    
+    "Return ONLY valid JSON with this exact structure:\n"
+    '{"score": <number>, "summary": "<2-3 sentences>", "suggestions": [...]}\n\n'
+    "Be honest, thorough, and constructively critical about content - not OCR errors."
 )
 
 def configure_gemini():
@@ -46,21 +80,33 @@ def configure_gemini():
         raise RuntimeError("GEMINI_API_KEY is not configured in the environment.")
     genai.configure(api_key=api_key)
 
+# cleans common OCR artifacts before analysis 
+def clean_ocr_text(text: str) -> str:
+    
+    text = re.sub(r'([a-z])([A-Z])', r'\1 \2', text)
+    text = re.sub(r'([.!?])([A-Z])', r'\1 \2', text)
+    text = re.sub(r'(\d+[+%]?)([a-z])', r'\1 \2', text)
+    text = re.sub(r'\b(in|to|for|from|with|and|or|of|at)\b([A-Z])', r'\1 \2', text)
+    text = re.sub(r'\s+', ' ', text)
+    text = re.sub(r'\n\s+\n', '\n\n', text)
+    
+    return text.strip()
+
 
 def build_prompt(payload: AnalysisRequest) -> str:
+    # Clean OCR artifacts before analysis
+    cleaned_text = clean_ocr_text(payload.resume_text)
+    
     base = [
         SYSTEM_PROMPT,
         "",
         "Analyze the following resume text.",
-        f"Target role: {payload.target_role}" if payload.target_role else "General role.",
+        f"Target role: {payload.target_role}" if payload.target_role else "Target role: General/Any position",
         "",
-        "Resume:",
-        payload.resume_text.strip(),
+        "Resume text:",
+        cleaned_text,
         "",
-        f"Limit suggestions to at most {MAX_SUGGESTIONS}.",
-        "",
-        "Return your response as a JSON object with the following structure:",
-        '{"score": <number>, "summary": "<string>", "suggestions": [{"category": "<string>", "issue": "<string>", "recommendation": "<string>"}]}'
+        "Provide your analysis following the scoring guidelines and suggestion rules above.",
     ]
     return "\n".join(base)
 
@@ -145,32 +191,7 @@ def openai_health_check():
 
 
 @gemini_router.post("/analyze", response_model=AnalysisResponse)
-async def analyze_resume(request: Request):
-    # fix any parsing errors before we analyze 
-    try:
-        body = await request.body()
-        body_str = body.decode('utf-8')
-        
-        try:
-            data = json.loads(body_str)
-        except json.JSONDecodeError as e:
-            try:
-                fixed_body = control_char_clean(body_str)
-                data = json.loads(fixed_body)
-            except json.JSONDecodeError:
-                raise HTTPException(
-                    status_code=422,
-                    detail=f"Invalid JSON format. Error: {str(e)}"
-                )
-        
-        # Pydantic validation as a final check
-        payload = AnalysisRequest(**data)
-        
-    except Exception as e:
-        raise Exception(
-            detail=f"An error occurred during parsing: {e}"
-        )
-    
+async def analyze_resume(payload: AnalysisRequest):
     configure_gemini()
     
     # build a generative model
