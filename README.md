@@ -238,6 +238,15 @@ uvicorn main:app --reload --host 0.0.0.0 --port 8000 # available at localhost:80
 | Vraj Patel          | Backend Lead           | vpatel46@wisc.edu     |
 | Manan Chand         | Project Coordinator    | mtchand@wisc.edu      |
 
+## Team Roles (Rotating Weekly)
+
+| Name                | Week 4 Role            | Email                 |
+| ------------------- | ---------------------- | --------------------- |
+| Mahesh Ramakrishnan | Observer/Documentation | mramakrishn3@wisc.edu |
+| Akash Mohan         | Project Coordinator    | amohan29@wisc.edu     |
+| Vraj Patel          | Frontend Lead          | vpatel46@wisc.edu     |
+| Manan Chand         | Backend Lead           | mtchand@wisc.edu      |
+
 
 ## Timeline
 
