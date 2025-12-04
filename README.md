@@ -129,6 +129,7 @@ POST /analyze
 │           │               │   ├── AuthRepository.kt
 │           │               │   └── AuthViewModel.kt
 │           │               ├── data
+│           │               │   ├── DashboardViewModel.kt
 │           │               │   ├── DataViewModel.kt
 │           │               │   ├── FirestoreRepository.kt
 │           │               │   └── UserViewModel.kt
@@ -142,13 +143,17 @@ POST /analyze
 │           │                   ├── screens
 │           │                   │   ├── CameraScreen.kt
 │           │                   │   ├── DashboardScreen.kt
+│           │                   │   ├── HelpCenterScreen.kt
 │           │                   │   ├── HomeScreen.kt
+│           │                   │   ├── LoadingScreen.kt
 │           │                   │   ├── LogInScreen.kt
 │           │                   │   ├── PolishResumeScreen.kt
 │           │                   │   ├── ProfileScreen.kt
 │           │                   │   ├── ProfileSettingsScreen.kt
 │           │                   │   ├── ResumeAnalysisScreen.kt
 │           │                   │   ├── ResumeLensApp.kt
+│           │                   │   ├── ResumeTipsScreen.kt
+│           │                   │   ├── SecurityScreen.kt
 │           │                   │   ├── SignUpScreen.kt
 │           │                   │   └── WelcomeScreen.kt
 │           │                   └── theme
@@ -202,8 +207,8 @@ pip install -r requirements.txt
 
 #### 2. Configure Environment Variables
 
-* Create a `.env` file in the `backend/` directory.
-* Create a `credentials` folder in the `backend/` directory and add your `google_service_account.json` from the Google Cloud Console.
+- Create a `.env` file in the `backend/` directory.
+- Create a `credentials` folder in the `backend/` directory and add your `google_service_account.json` from the Google Cloud Console.
 
 ```bash
 GEMINI_API_KEY=your_gemini_api_key_here
@@ -246,7 +251,6 @@ uvicorn main:app --reload --host 0.0.0.0 --port 8000 # available at localhost:80
 | Akash Mohan         | Project Coordinator    | amohan29@wisc.edu     |
 | Vraj Patel          | Observer/Documentation | vpatel46@wisc.edu     |
 | Manan Chand         | Frontend Lead          | mtchand@wisc.edu      |
-
 
 ## Timeline
 
