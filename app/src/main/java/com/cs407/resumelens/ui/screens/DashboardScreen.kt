@@ -5,6 +5,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -36,12 +37,25 @@ fun DashboardScreen(
     onNavigateToProfileSettings: () -> Unit = {},
     onNavigateToResumeTips: () -> Unit = {},
     onSignOut: () -> Unit = {},
-    userViewModel: UserViewModel = viewModel()
+    userViewModel: UserViewModel = viewModel(),
+    dashboardViewModel: com.cs407.resumelens.data.DashboardViewModel = viewModel()
 ) {
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val profileDrawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
     val userState by userViewModel.state.collectAsStateWithLifecycle()
+    val dashboardState by dashboardViewModel.state.collectAsStateWithLifecycle()
+    val snackbarHostState = remember { SnackbarHostState() }
+    
+    // Show error message in snackbar
+    LaunchedEffect(dashboardState.errorMessage) {
+        dashboardState.errorMessage?.let { error ->
+            snackbarHostState.showSnackbar(
+                message = error,
+                duration = SnackbarDuration.Short
+            )
+        }
+    }
 
     ModalNavigationDrawer(
         drawerState = drawerState,
@@ -110,40 +124,67 @@ fun DashboardScreen(
                             }
                         }
                     )
-                }
+                },
+                snackbarHost = { SnackbarHost(snackbarHostState) }
             ) { padding ->
-                Column(
+                Box(
                     modifier = Modifier
                         .fillMaxSize()
                         .padding(padding)
-                        .padding(horizontal = 20.dp, vertical = 10.dp)
                 ) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(horizontal = 20.dp, vertical = 10.dp)
+                    ) {
 
-                    Text("Total Resume Edits", fontSize = 16.sp, color = Color.Gray)
-                    Text("432", fontSize = 40.sp, fontWeight = FontWeight.Bold)
+                        Text("Total Resume Edits", fontSize = 16.sp, color = Color.Gray)
+                    Text(
+                        text = "${dashboardState.totalEdits}",
+                        fontSize = 40.sp,
+                        fontWeight = FontWeight.Bold
+                    )
 
                     Spacer(Modifier.height(12.dp))
 
-
-                    //Citation- https://github.com/developerchunk/BarGraph-JetpackCompose
-                    // Citation- https://stackoverflow.com/questions/66955541/create-list-of-lists-in-ktlin
-                    Row(
-                        horizontalArrangement = Arrangement.spacedBy(6.dp),
-                        verticalAlignment = Alignment.Bottom,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(120.dp)
-                            .padding(vertical = 8.dp)
-                    ) {
-                        val heights = listOf(40, 80, 60, 100, 90, 70, 50)
-                        heights.forEach {
-                            Box(
-                                modifier = Modifier
-                                    .weight(1f)
-                                    .height(it.dp)
-                                    .clip(RoundedCornerShape(3.dp))
-                                    .background(Color(0xFF9E9E9E))
+                    // Graph: Hide if empty, show bars if data exists
+                    if (dashboardState.graphBars.isEmpty()) {
+                        // Empty state message
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(120.dp)
+                                .padding(vertical = 8.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = "Upload your resume to see activity here.",
+                                color = Color.Gray,
+                                fontSize = 14.sp,
+                                textAlign = androidx.compose.ui.text.style.TextAlign.Center
                             )
+                        }
+                    } else {
+                        // Show bars
+                        //Citation- https://github.com/developerchunk/BarGraph-JetpackCompose
+                        // Citation- https://stackoverflow.com/questions/66955541/create-list-of-lists-in-ktlin
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(6.dp),
+                            verticalAlignment = Alignment.Bottom,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(120.dp)
+                                .padding(vertical = 8.dp)
+                        ) {
+                            dashboardState.graphBars.forEach { score ->
+                                Box(
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .height(maxOf(score.coerceIn(0, 100), 4).dp)
+                                        .clip(RoundedCornerShape(3.dp))
+                                        .background(Color(0xFF9E9E9E))
+                                )
+                            }
                         }
                     }
 
@@ -155,13 +196,13 @@ fun DashboardScreen(
                     ) {
                         StatCard(
                             title = "Resume Corrections",
-                            value = "30",
+                            value = "${dashboardState.totalCorrections}",
                             icon = R.drawable.resume_icon,
                             modifier = Modifier.weight(1f)
                         )
                         StatCard(
                             title = "AI Checker",
-                            value = "80%",
+                            value = "${dashboardState.aiCheckerPercent}%",
                             icon = R.drawable.resume_icon,
                             modifier = Modifier.weight(1f)
                         )
@@ -174,16 +215,51 @@ fun DashboardScreen(
                     Spacer(Modifier.height(10.dp))
 
                     LazyColumn {
-                        items(3) { index ->
-                            ResumeHistoryItem(
-                                title = "Resume_Version_${3 - index}",
-                                corrections = listOf(5, 2, 7)[index],
-                                suggestions = listOf(6, 7, 10)[index],
-                                onClick = {
-                                    // Navigate to resume analysis with resume ID
-                                    onNavigateToResumeAnalysis("resume_${index + 1}")
+                        if (dashboardState.historyItems.isEmpty()) {
+                            item {
+                                Column(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(vertical = 32.dp),
+                                    horizontalAlignment = Alignment.CenterHorizontally
+                                ) {
+                                    Text(
+                                        text = "No resumes analyzed yet",
+                                        color = Color.Gray,
+                                        fontSize = 16.sp
+                                    )
+                                    Spacer(Modifier.height(8.dp))
+                                    Text(
+                                        text = "Tap the + button to get started!",
+                                        color = Color.Gray,
+                                        fontSize = 14.sp
+                                    )
                                 }
-                            )
+                            }
+                        } else {
+                            items(dashboardState.historyItems) { historyItem ->
+                                ResumeHistoryItem(
+                                    title = historyItem.versionLabel,
+                                    corrections = historyItem.correctionsCount,
+                                    suggestions = historyItem.suggestionsCount,
+                                    onClick = {
+                                        onNavigateToResumeAnalysis(historyItem.analysisId)
+                                    }
+                                )
+                            }
+                        }
+                    }
+                }
+                    
+                    // Loading indicator overlay
+                    if (dashboardState.isLoading) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .background(Color.Black.copy(alpha = 0.3f)),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            CircularProgressIndicator(color = Color.White)
                         }
                     }
                 }

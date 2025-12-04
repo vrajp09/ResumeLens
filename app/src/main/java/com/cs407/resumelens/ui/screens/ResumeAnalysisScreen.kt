@@ -38,20 +38,32 @@ import com.cs407.resumelens.network.SuggestionDto
 @Composable
 fun ResumeAnalysisScreen(
     viewModel: ResumeAnalysisViewModel,
+    analysisId: String? = null,
     onBack: () -> Unit = {},
     onImproveScore: () -> Unit = {}
 ) {
     val uiState by viewModel.state.collectAsStateWithLifecycle()
     val context = LocalContext.current
 
-    // Kick off analysis once when screen enters with a pending image
     LaunchedEffect(Unit) {
-        val uri = viewModel.consumePendingImageUri()
-        if (uri != null) {
-            val bytes = context.contentResolver.openInputStream(uri)?.use { it.readBytes() }
-            if (bytes != null) {
-                viewModel.analyzeImageBytes(bytes)
-            }
+        // Check if loading existing analysis
+        if (analysisId != null) {
+            viewModel.loadAnalysisById(analysisId)
+            return@LaunchedEffect
+        }
+        
+        // Handle new analysis from camera/PDF
+        val imgUri = viewModel.consumePendingImageUri()
+        if (imgUri != null) {
+            val bytes = context.contentResolver.openInputStream(imgUri)?.readBytes()
+            if (bytes != null) viewModel.analyzeImageBytes(bytes)
+            return@LaunchedEffect
+        }
+
+        val pdfUri = viewModel.consumePendingPdfUri()
+        if (pdfUri != null) {
+            val bytes = context.contentResolver.openInputStream(pdfUri)?.readBytes()
+            if (bytes != null) viewModel.analyzePdfBytes(bytes)
         }
     }
 
