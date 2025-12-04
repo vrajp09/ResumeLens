@@ -67,13 +67,6 @@ fun ProfileSettingsScreen(
             )
 
             Spacer(modifier = Modifier.weight(1f))
-
-            IconButton(onClick = { /* handle notifications later */ }) {
-                Icon(
-                    painter = painterResource(id = R.drawable.bell),
-                    contentDescription = "Notifications"
-                )
-            }
         }
 
         Spacer(modifier = Modifier.height(20.dp))
@@ -122,8 +115,8 @@ fun ProfileSettingsScreen(
         Spacer(modifier = Modifier.height(10.dp))
 
         SimpleSettingOption(R.drawable.theme, "Theme", onClick = { /* handle theme later */ })
-        SimpleSettingOption(R.drawable.card, "Manage Subscription", onClick = { /* handle theme later */ })
         SimpleSettingOption(R.drawable.security, "Security", onClick = onNavigateToSecurity)
+        SimpleSettingOption(R.drawable.bell, "Notifications", onClick = { /* handle notifs later */ })
         SimpleSettingOption(R.drawable.help, "Help Center", onClick = onNavigateToHelpCenter)
 
         Spacer(modifier = Modifier.height(40.dp))
