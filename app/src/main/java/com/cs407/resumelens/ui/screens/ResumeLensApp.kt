@@ -19,6 +19,8 @@ sealed class Screen(val route: String) {
     data object Welcome : Screen("welcome")
     data object SignUp  : Screen("signup")
     data object LogIn   : Screen("login")
+
+    data object Loading : Screen("loading")
     
     // Main App Flow
     data object Dashboard : Screen("dashboard")
@@ -28,6 +30,10 @@ sealed class Screen(val route: String) {
     
     // Profile & Settings
     data object ProfileSettings : Screen("profile_settings")
+
+    data object Security : Screen("security")
+
+    data object HelpCenter : Screen("help_center")
     
     // Helpers for navigation arguments
     companion object {
@@ -54,7 +60,7 @@ fun ResumeLensApp() {
     // Navigate whenever sign-in state changes
     LaunchedEffect(authState.isSignedIn) {
         if (authState.isSignedIn) {
-            nav.navigate(Screen.Dashboard.route) {
+            nav.navigate(Screen.Loading.route) {
                 popUpTo(0) { inclusive = true }
             }
         }
@@ -90,14 +96,22 @@ fun ResumeLensApp() {
                 onClearError = authVm::clearError
             )
         }
-        composable(Screen.Dashboard.route) {
+        composable(Screen.Loading.route) {
             val userVm: UserViewModel = viewModel()
             val dashboardVm: com.cs407.resumelens.data.DashboardViewModel = viewModel()
-            
+
             LaunchedEffect(Unit) {
                 userVm.refreshProfile()
                 dashboardVm.loadDashboardData()
+                nav.navigate(Screen.Dashboard.route) {
+                    popUpTo(Screen.Loading.route) { inclusive = true }
+                }
             }
+            LoadingScreen()
+        }
+        composable(Screen.Dashboard.route) {
+            val userVm: UserViewModel = viewModel()
+            val dashboardVm: com.cs407.resumelens.data.DashboardViewModel = viewModel()
             
             DashboardScreen(
                 onNavigateToPolishResume = { nav.navigate(Screen.PolishResume.route) },
@@ -181,8 +195,19 @@ fun ResumeLensApp() {
                     authVm.signOut()
                     nav.navigate(Screen.Welcome.route) { popUpTo(0) { inclusive = true } }
                 },
+                onNavigateToSecurity = { nav.navigate(Screen.Security.route) }, // <-- Add this
+                onNavigateToHelpCenter = { nav.navigate(Screen.HelpCenter.route) },
                 userViewModel = userVm
             )
         }
+
+        composable(Screen.Security.route) {
+            SecurityScreen(onBack = { nav.popBackStack() })
+        }
+
+        composable(Screen.HelpCenter.route) {
+            HelpCenterScreen(onBack = { nav.popBackStack() })
+        }
+
     }
 }

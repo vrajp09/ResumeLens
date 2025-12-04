@@ -32,6 +32,8 @@ import com.cs407.resumelens.ui.theme.ResumeLensTheme
 fun ProfileSettingsScreen(
     onBack: () -> Unit = {},
     onSignOut: () -> Unit = {},
+    onNavigateToSecurity: () -> Unit = {},
+    onNavigateToHelpCenter: () -> Unit = {},
     userViewModel: UserViewModel = viewModel()
 ) {
     val userState by userViewModel.state.collectAsStateWithLifecycle()
@@ -119,10 +121,10 @@ fun ProfileSettingsScreen(
 
         Spacer(modifier = Modifier.height(10.dp))
 
-        SimpleSettingOption(R.drawable.theme, "Theme")
-        SimpleSettingOption(R.drawable.card, "Manage Subscription")
-        SimpleSettingOption(R.drawable.security, "Security")
-        SimpleSettingOption(R.drawable.help, "Help Center")
+        SimpleSettingOption(R.drawable.theme, "Theme", onClick = { /* handle theme later */ })
+        SimpleSettingOption(R.drawable.card, "Manage Subscription", onClick = { /* handle theme later */ })
+        SimpleSettingOption(R.drawable.security, "Security", onClick = onNavigateToSecurity)
+        SimpleSettingOption(R.drawable.help, "Help Center", onClick = onNavigateToHelpCenter)
 
         Spacer(modifier = Modifier.height(40.dp))
 
@@ -140,12 +142,12 @@ fun ProfileSettingsScreen(
 }
 
 @Composable
-fun SimpleSettingOption(iconId: Int, label: String) {
+fun SimpleSettingOption(iconId: Int, label: String, onClick: () -> Unit) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
             .fillMaxWidth()
-            .clickable { /* handle click later */ }
+            .clickable(onClick = onClick)
             .padding(vertical = 8.dp)
     ) {
         Icon(
