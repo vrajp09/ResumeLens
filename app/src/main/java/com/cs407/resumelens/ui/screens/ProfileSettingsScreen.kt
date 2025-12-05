@@ -8,6 +8,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
@@ -123,14 +124,18 @@ fun ProfileSettingsScreen(
 
         Button(
             onClick = onSignOut,
-            colors = ButtonDefaults.buttonColors(containerColor = Color.Gray),
+            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error
+            ),
             shape = RoundedCornerShape(8.dp),
             modifier = Modifier
                 .fillMaxWidth()
                 .height(48.dp)
         ) {
-            Text(text = "Log out", color = Color.White, fontSize = 16.sp)
-        }
+            Text(
+                text = "Log out",
+                color = MaterialTheme.colorScheme.onError,
+                fontSize = 16.sp
+            )}
     }
 }
 
@@ -146,13 +151,13 @@ fun SimpleSettingOption(iconId: Int, label: String, onClick: () -> Unit) {
         Icon(
             painter = painterResource(id = iconId),
             contentDescription = label,
-            tint = Color.Black,
+            tint = MaterialTheme.colorScheme.onSurface,
             modifier = Modifier.size(22.dp)
         )
 
         Spacer(modifier = Modifier.width(12.dp))
 
-        Text(text = label, fontSize = 16.sp, color = Color.Black)
+        Text(text = label, fontSize = 16.sp, color = MaterialTheme.colorScheme.onSurface)
     }
 }
 
