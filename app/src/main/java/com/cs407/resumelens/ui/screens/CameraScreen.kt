@@ -71,7 +71,7 @@ fun CameraScreen(
                         Icon(
                             painter = painterResource(id = R.drawable.back_button),
                             contentDescription = "Back",
-                            tint = Color.Black
+                            tint = MaterialTheme.colorScheme.onSurface
                         )
                     }
                 }
@@ -132,11 +132,11 @@ fun CameraScreen(
                     if (isCapturing) {
                         CircularProgressIndicator(
                             modifier = Modifier.padding(bottom = 16.dp),
-                            color = Color(0xFF00B67A)
+                            color = MaterialTheme.colorScheme.primary
                         )
                         Text(
                             text = "Capturing...",
-                            color = Color.White,
+                            color = MaterialTheme.colorScheme.onPrimary,
                             fontSize = 14.sp
                         )
                     } else {
@@ -173,8 +173,8 @@ fun CameraScreen(
                                 .fillMaxWidth()
                                 .height(56.dp),
                             shape = RoundedCornerShape(14.dp),
-                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF00B67A))
-                        ) {
+                            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary))
+                        {
                             Text("Capture Photo", color = Color.White, fontSize = 16.sp)
                         }
                     }
@@ -215,8 +215,7 @@ fun CameraScreen(
                         .fillMaxWidth()
                         .height(56.dp),
                     shape = RoundedCornerShape(14.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF00B67A))
-                ) {
+                    colors = ButtonDefaults.buttonColors( containerColor = MaterialTheme.colorScheme.primary)) {
                     Text("Grant Permission", color = Color.White, fontSize = 16.sp)
                 }
             }

@@ -19,7 +19,11 @@ fun SecurityScreen(onBack: () -> Unit) {
                 title = { Text("Security", fontWeight = FontWeight.Bold) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(painterResource(id = R.drawable.back_button), contentDescription = "Back")
+                        Icon(
+                            painterResource(id = R.drawable.back_button),
+                            contentDescription = "Back",
+                            tint = MaterialTheme.colorScheme.onSurface
+                        )
                     }
                 }
             )
@@ -60,7 +64,11 @@ private fun InfoItem(title: String, description: String) {
     Column(modifier = Modifier.padding(vertical = 8.dp)) {
         Text(title, fontWeight = FontWeight.Bold, fontSize = 16.sp)
         Spacer(modifier = Modifier.height(4.dp))
-        Text(description, fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Text(
+            description,
+            fontSize = 14.sp,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
         Divider(modifier = Modifier.padding(top = 12.dp))
     }
 }

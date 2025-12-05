@@ -39,16 +39,16 @@ fun ResumeTipsScreen(onBack: () -> Unit = {}) {
         ) {
             item {
                 Text(
-                        "ATS Optimization Tips",
-                        fontSize = 20.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color(0xFF00B67A)
+                    "ATS Optimization Tips",
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.primary
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
                         "Follow these best practices to create an ATS-friendly resume that stands out.",
                         fontSize = 14.sp,
-                        color = Color.Gray
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 Spacer(modifier = Modifier.height(24.dp))
             }
@@ -175,7 +175,9 @@ private fun TipCard(tip: TipItem) {
     Card(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(12.dp),
-            colors = CardDefaults.cardColors(containerColor = Color(0xFFF5F5F5))
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant
+        )
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Text(
@@ -200,18 +202,22 @@ private fun ProTipCard(title: String, tip: String) {
     Card(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(12.dp),
-            colors = CardDefaults.cardColors(containerColor = Color(0xFFE8F5E9))
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer
+            )
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Text(
                     text = title,
                     fontWeight = FontWeight.Bold,
                     fontSize = 16.sp,
-                    color = Color(0xFF00B67A)
+                    color = MaterialTheme.colorScheme.primary
             )
             Spacer(modifier = Modifier.height(8.dp))
-            Text(text = tip, fontSize = 14.sp, color = Color.DarkGray, lineHeight = 20.sp)
-        }
+            Text(
+                text = tip,
+                fontSize = 14.sp,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )}
     }
 }
 
