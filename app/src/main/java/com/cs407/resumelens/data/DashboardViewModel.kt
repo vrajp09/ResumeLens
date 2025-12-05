@@ -16,6 +16,12 @@ data class HistoryItem(
     val score: Int
 )
 
+data class GraphBarData(
+    val score: Int,
+    val analysisId: String,
+    val createdAt: Timestamp
+)
+
 data class DashboardUiState(
     val isLoading: Boolean = false,
     val errorMessage: String? = null,
@@ -23,6 +29,7 @@ data class DashboardUiState(
     val totalCorrections: Int = 0,
     val aiCheckerPercent: Int = 0,
     val graphBars: List<Int> = emptyList(),
+    val graphBarData: List<GraphBarData> = emptyList(),
     val historyItems: List<HistoryItem> = emptyList()
 )
 
@@ -97,10 +104,15 @@ class DashboardViewModel(
             0
         }
 
-        val graphBars = analyses
-            .sortedBy { it.createdAt }
-            .takeLast(7)
-            .map { it.score }
+        val sortedAnalysesForGraph = analyses.sortedBy { it.createdAt }.takeLast(7)
+        val graphBars = sortedAnalysesForGraph.map { it.score }
+        val graphBarData = sortedAnalysesForGraph.map { analysis ->
+            GraphBarData(
+                score = analysis.score,
+                analysisId = analysis.analysisId,
+                createdAt = analysis.createdAt
+            )
+        }
 
         val sortedAnalyses = analyses.sortedByDescending { it.createdAt }
         val historyItems = sortedAnalyses.mapIndexed { index, analysis ->
@@ -118,6 +130,7 @@ class DashboardViewModel(
             totalCorrections = totalCorrections,
             aiCheckerPercent = aiCheckerPercent,
             graphBars = graphBars,
+            graphBarData = graphBarData,
             historyItems = historyItems
         )
     }
