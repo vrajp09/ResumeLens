@@ -14,6 +14,7 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -65,7 +66,7 @@ fun PolishResumeScreen(
                         Icon(
                             painter = painterResource(id = R.drawable.back_button),
                             contentDescription = "Back",
-                            tint = Color.Black
+                            tint = MaterialTheme.colorScheme.onSurface
                         )
                     }
                 }
@@ -95,21 +96,24 @@ fun PolishResumeScreen(
                     .fillMaxWidth()
                     .height(180.dp)
                     .clip(RoundedCornerShape(16.dp))
-                    .border(2.dp, Color(0xFF00B67A), RoundedCornerShape(16.dp))
-                    .background(Color.White)
-                    .clickable { filePickerLauncher.launch("*/*")},
+                    .border(2.dp, MaterialTheme.colorScheme.primary, RoundedCornerShape(16.dp))
+                    .background(MaterialTheme.colorScheme.surface)
+                    .clickable { filePickerLauncher.launch("*/*") },
                 contentAlignment = Alignment.Center
             ) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Icon(
                         painter = painterResource(id = R.drawable.resume_icon),
                         contentDescription = "Upload Icon",
-                        tint = Color(0xFF00B67A),
+                        tint = MaterialTheme.colorScheme.primary,
                         modifier = Modifier.size(42.dp)
                     )
                     Spacer(Modifier.height(10.dp))
-                    Text("Select file", color = Color(0xFF00B67A), fontWeight = FontWeight.SemiBold)
-                }
+                    Text(
+                        "Select file",
+                        color = MaterialTheme.colorScheme.primary,
+                        fontWeight = FontWeight.SemiBold
+                    )}
             }
 
             Spacer(Modifier.height(24.dp))
@@ -122,14 +126,14 @@ fun PolishResumeScreen(
                     modifier = Modifier
                         .weight(1f)
                         .height(1.dp)
-                        .background(Color.LightGray)
+                        .background(MaterialTheme.colorScheme.outline)
                 )
                 Text("  or  ", color = Color.Gray)
                 Box(
                     modifier = Modifier
                         .weight(1f)
                         .height(1.dp)
-                        .background(Color.LightGray)
+                        .background(MaterialTheme.colorScheme.outline)
                 )
             }
 
@@ -139,7 +143,7 @@ fun PolishResumeScreen(
             // Citation- https://stuff.mit.edu/afs/sipb/project/android/docs/guide/topics/ui/controls/button.html
             Button(
                 onClick = onContinue,
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFCCF6E3)),
+                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
                 shape = RoundedCornerShape(14.dp),
                 modifier = Modifier
                     .fillMaxWidth()
@@ -148,7 +152,7 @@ fun PolishResumeScreen(
                 Icon(
                     painter = painterResource(id = R.drawable.profile_logo), // replace with camera icon later
                     contentDescription = "Camera",
-                    tint = Color(0xFF00B67A),
+                    tint = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.size(20.dp)
                 )
                 Spacer(Modifier.width(8.dp))

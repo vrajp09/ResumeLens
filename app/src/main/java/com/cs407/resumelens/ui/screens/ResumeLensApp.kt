@@ -19,6 +19,8 @@ sealed class Screen(val route: String) {
     data object Welcome : Screen("welcome")
     data object SignUp  : Screen("signup")
     data object LogIn   : Screen("login")
+
+    data object Loading : Screen("loading")
     
     // Main App Flow
     data object Dashboard : Screen("dashboard")
@@ -27,7 +29,12 @@ sealed class Screen(val route: String) {
     data object ResumeAnalysis : Screen("resume_analysis")
     
     // Profile & Settings
+
+    data object Profile : Screen("profile")
     data object ProfileSettings : Screen("profile_settings")
+    data object ResumeTips : Screen("resume_tips")
+    data object Security : Screen("security")
+    data object HelpCenter : Screen("help_center")
     
     // Helpers for navigation arguments
     companion object {
@@ -54,7 +61,7 @@ fun ResumeLensApp() {
     // Navigate whenever sign-in state changes
     LaunchedEffect(authState.isSignedIn) {
         if (authState.isSignedIn) {
-            nav.navigate(Screen.Dashboard.route) {
+            nav.navigate(Screen.Loading.route) {
                 popUpTo(0) { inclusive = true }
             }
         }
@@ -90,23 +97,32 @@ fun ResumeLensApp() {
                 onClearError = authVm::clearError
             )
         }
+        composable(Screen.Loading.route) {
+            val userVm: UserViewModel = viewModel()
+            val dashboardVm: com.cs407.resumelens.data.DashboardViewModel = viewModel()
+
+            LaunchedEffect(Unit) {
+                userVm.refreshProfile()
+                dashboardVm.loadDashboardData()
+                nav.navigate(Screen.Dashboard.route) {
+                    popUpTo(Screen.Loading.route) { inclusive = true }
+                }
+            }
+            LoadingScreen()
+        }
         composable(Screen.Dashboard.route) {
             val userVm: UserViewModel = viewModel()
             val dashboardVm: com.cs407.resumelens.data.DashboardViewModel = viewModel()
             
-            LaunchedEffect(Unit) {
-                userVm.refreshProfile()
-                dashboardVm.loadDashboardData()
-            }
-            
             DashboardScreen(
+                onNavigateToProfile = { nav.navigate(Screen.Profile.route) },
                 onNavigateToPolishResume = { nav.navigate(Screen.PolishResume.route) },
                 onNavigateToResumeAnalysis = { resumeId ->
                     nav.navigate(Screen.resumeAnalysis(resumeId))
                 },
                 onOpenProfile = { /* Profile handled as drawer overlay */ },
                 onNavigateToProfileSettings = { nav.navigate(Screen.ProfileSettings.route) },
-                onNavigateToResumeTips = { /* TODO: Implement resume tips screen */ },
+                onNavigateToResumeTips = { nav.navigate(Screen.ResumeTips.route) },
                 onSignOut = {
                     authVm.signOut()
                     nav.navigate(Screen.Welcome.route) { popUpTo(0) { inclusive = true } }
@@ -115,6 +131,20 @@ fun ResumeLensApp() {
                 dashboardViewModel = dashboardVm
             )
         }
+
+        composable(Screen.Profile.route) {
+            val userVm: UserViewModel = viewModel()
+            LaunchedEffect(Unit) {
+                userVm.refreshProfile()
+            }
+
+            ProfileScreen(
+                onBack = { nav.popBackStack() },
+                onNavigateToSettings = { nav.navigate(Screen.ProfileSettings.route) },
+                userViewModel = userVm
+            )
+        }
+
         composable(Screen.PolishResume.route) {
             PolishResumeScreen(
                 onBack = { nav.popBackStack() },
@@ -181,8 +211,23 @@ fun ResumeLensApp() {
                     authVm.signOut()
                     nav.navigate(Screen.Welcome.route) { popUpTo(0) { inclusive = true } }
                 },
+                onNavigateToSecurity = { nav.navigate(Screen.Security.route) }, // <-- Add this
+                onNavigateToHelpCenter = { nav.navigate(Screen.HelpCenter.route) },
                 userViewModel = userVm
             )
         }
+
+        composable(Screen.Security.route) {
+            SecurityScreen(onBack = { nav.popBackStack() })
+        }
+
+        composable(Screen.HelpCenter.route) {
+            HelpCenterScreen(onBack = { nav.popBackStack() })
+        }
+
+        composable(Screen.ResumeTips.route) {
+            ResumeTipsScreen(onBack = { nav.popBackStack() })
+        }
+
     }
 }

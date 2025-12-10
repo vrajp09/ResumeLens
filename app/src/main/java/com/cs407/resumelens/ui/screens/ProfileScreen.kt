@@ -2,9 +2,12 @@ package com.cs407.resumelens.ui.screens
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -24,8 +27,11 @@ import com.cs407.resumelens.data.UserViewModel
 
 @Composable
 fun ProfileScreen(
-    userViewModel: UserViewModel = viewModel()
-) {
+    userViewModel: UserViewModel = viewModel(),
+    onBack: () -> Unit = {},
+    onNavigateToSettings: () -> Unit = {}
+)
+ {
     val userState by userViewModel.state.collectAsStateWithLifecycle()
     
     LaunchedEffect(Unit) {
@@ -34,26 +40,33 @@ fun ProfileScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.White)
+            .background(MaterialTheme.colorScheme.background)
             .padding(horizontal = 24.dp, vertical = 16.dp)
     ) {
         Row(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 12.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Icon(
-                painter = painterResource(id = R.drawable.back_button),
-                contentDescription = "Back",
-                tint = Color.Black,
-                modifier = Modifier.size(28.dp)
-            )
-            Icon(
-                painter = painterResource(id = R.drawable.settings_icon),
-                contentDescription = "Settings",
-                tint = Color.Black,
-                modifier = Modifier.size(28.dp)
-            )
+            IconButton(onClick = onBack) {
+                Icon(
+                    painter = painterResource(id = R.drawable.back_button),
+                    contentDescription = "Back",
+                    tint = MaterialTheme.colorScheme.onSurface,
+                    modifier = Modifier.size(28.dp)
+                )
+            }
+
+            IconButton(onClick = onNavigateToSettings) {
+                Icon(
+                    painter = painterResource(id = R.drawable.settings_icon),
+                    contentDescription = "Settings",
+                    tint = MaterialTheme.colorScheme.onSurface,
+                    modifier = Modifier.size(28.dp)
+                )
+            }
         }
 
         Spacer(Modifier.height(24.dp))
@@ -109,7 +122,7 @@ fun ProfileScreen(
             modifier = Modifier
                 .fillMaxWidth()
                 .clip(RoundedCornerShape(8.dp))
-                .background(Color(0xFFF2F2F2))
+                .background(MaterialTheme.colorScheme.surfaceVariant)
                 .padding(16.dp)
         ) {
             Text("Quantified Impact", fontWeight = FontWeight.SemiBold)
@@ -147,7 +160,7 @@ fun ProfileScreen(
 @Composable
 private fun InfoItem(label: String, value: String) {
     Column(Modifier.padding(vertical = 4.dp)) {
-        Text(label, color = Color.Gray, fontSize = 14.sp)
-        Text(value, fontSize = 16.sp, fontWeight = FontWeight.Medium)
+        Text(label, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Text(value, color = MaterialTheme.colorScheme.onSurface)
     }
 }

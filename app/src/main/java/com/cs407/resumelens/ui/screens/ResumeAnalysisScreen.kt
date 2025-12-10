@@ -51,7 +51,7 @@ fun ResumeAnalysisScreen(
             viewModel.loadAnalysisById(analysisId)
             return@LaunchedEffect
         }
-        
+
         // Handle new analysis from camera/PDF
         val imgUri = viewModel.consumePendingImageUri()
         if (imgUri != null) {
@@ -98,12 +98,12 @@ fun ResumeAnalysisScreen(
         when {
             uiState.loading -> {
                 Spacer(modifier = Modifier.height(40.dp))
-                CircularProgressIndicator()
+                CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
                 Spacer(modifier = Modifier.height(16.dp))
                 Text(
                     text = "Analyzing your resume...",
                     style = MaterialTheme.typography.bodyMedium,
-                    color = Color.Gray
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
 
@@ -111,9 +111,10 @@ fun ResumeAnalysisScreen(
                 Spacer(modifier = Modifier.height(40.dp))
                 Text(
                     text = uiState.error ?: "",
-                    color = Color.Red,
+                    color = MaterialTheme.colorScheme.error,
                     style = MaterialTheme.typography.bodyMedium
                 )
+
             }
 
             uiState.score != null -> {
@@ -128,10 +129,11 @@ fun ResumeAnalysisScreen(
 
                 Text(
                     text = uiState.summary ?: "",
-                    color = Color.Gray,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     fontSize = 14.sp,
                     modifier = Modifier.padding(horizontal = 16.dp),
                 )
+
 
                 Spacer(modifier = Modifier.height(24.dp))
 
@@ -192,10 +194,15 @@ fun ResumeAnalysisScreen(
                 .fillMaxWidth()
                 .height(50.dp),
             shape = RoundedCornerShape(30.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF91D0AC))
+            colors = ButtonDefaults.buttonColors(
+                containerColor = MaterialTheme.colorScheme.primary
+            )
         ) {
-            Text("Improve Score", color = Color.White, fontSize = 16.sp)
+            Text("Improve Score",
+                color = MaterialTheme.colorScheme.onPrimary,
+                fontSize = 16.sp)
         }
+
     }
 }
 
@@ -208,22 +215,26 @@ private fun ScoreCircle(label: String, score: Int) {
                 .size(80.dp)
                 .clip(CircleShape)
                 .background(Color.Transparent)
-                .border(width = 2.dp, color = Color(0xFF3CB371), shape = CircleShape),
+                .border(
+                    width = 2.dp,
+                    color = MaterialTheme.colorScheme.primary,
+                    shape = CircleShape
+                ),
             contentAlignment = Alignment.Center
         ) {
             Text(
                 text = "$score",
                 fontSize = 24.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color(0xFF3CB371)
+                color = MaterialTheme.colorScheme.primary
             )
         }
-        Spacer(modifier = Modifier.height(6.dp))
         Text(
             text = "$label Score",
-            color = Color.Black,
+            color = MaterialTheme.colorScheme.onSurface,
             fontSize = 13.sp
         )
+
     }
 }
 
@@ -233,18 +244,19 @@ private fun SuggestionItem(suggestion: SuggestionDto) {
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(10.dp))
-            .background(Color(0xFFF5F5F5))
+            .background(MaterialTheme.colorScheme.surfaceVariant)
             .padding(12.dp)
     ) {
         Text(
             text = suggestion.category,
             fontWeight = FontWeight.SemiBold,
-            fontSize = 14.sp
+            fontSize = 14.sp,
+            color = MaterialTheme.colorScheme.onSurface
         )
         Spacer(modifier = Modifier.height(4.dp))
         Text(
             text = suggestion.issue,
-            color = Color.Gray,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
             fontSize = 13.sp
         )
         Spacer(modifier = Modifier.height(4.dp))

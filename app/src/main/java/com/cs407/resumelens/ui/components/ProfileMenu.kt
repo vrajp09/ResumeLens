@@ -6,6 +6,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -27,6 +28,7 @@ import androidx.compose.ui.unit.sp
 import com.android.car.ui.toolbar.MenuItem
 import com.cs407.resumelens.R
 
+
 @Composable
 fun ProfileMenu(
     userName: String = "User",
@@ -38,15 +40,14 @@ fun ProfileMenu(
 ) {
     Column(
         modifier = Modifier
-            .width(280.dp)
-            .background(Color.White, RoundedCornerShape(20.dp))
-            .padding(vertical = 20.dp)
+            .fillMaxSize()
+            .padding(vertical = 24.dp, horizontal = 20.dp)
     ) {
-        // Header Section
+        // Header
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 20.dp),
+                .padding(bottom = 16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Image(
@@ -54,25 +55,23 @@ fun ProfileMenu(
                 contentDescription = "Profile picture",
                 modifier = Modifier
                     .size(72.dp)
-                    .clip(RoundedCornerShape(50))
+                    .clip(RoundedCornerShape(50.dp))
             )
             Spacer(Modifier.height(10.dp))
             Text(userName, fontWeight = FontWeight.Bold, fontSize = 18.sp)
-            if (username.isNotBlank()) {
-                Text("@$username", color = Color.Gray, fontSize = 14.sp)
-            } else {
-                Text("User", color = Color.Gray, fontSize = 14.sp)
-            }
+            Text(
+                if (username.isNotBlank()) "@$username" else "User",
+                color = Color.Gray,
+                fontSize = 14.sp
+            )
         }
 
-        Spacer(Modifier.height(16.dp))
         Divider(color = Color(0xFFE0E0E0), thickness = 1.dp)
 
-        // Menu Items
-        Column(modifier = Modifier.padding(top = 8.dp)) {
-            MenuItem(icon = R.drawable.profile_logo, text = "Profile", onClick = onProfileClick)
-            MenuItem(icon = R.drawable.settings_icon, text = "Settings", onClick = onSettingsClick)
-            MenuItem(icon = R.drawable.resume_icon, text = "Resume Tips", onClick = onResumeTipsClick)
+        // Menu items
+        Column(modifier = Modifier.padding(top = 8.dp)) { MenuItem(icon = R.drawable.profile_logo, text = "Profile", onClick = onProfileClick)
+           MenuItem(icon = R.drawable.settings_icon, text = "Settings", onClick = onSettingsClick)
+           MenuItem(icon = R.drawable.resume_icon, text = "Resume Tips", onClick = onResumeTipsClick)
         }
 
         Divider(
@@ -81,9 +80,10 @@ fun ProfileMenu(
             modifier = Modifier.padding(vertical = 8.dp)
         )
 
-        MenuItem(icon = R.drawable.logout_icon, text = "Log out", onClick = onLogoutClick)
+    MenuItem(icon = R.drawable.logout_icon, text = "Log out", onClick = onLogoutClick)
     }
 }
+
 
 @Composable
 private fun MenuItem(icon: Int, text: String, onClick: () -> Unit) {
