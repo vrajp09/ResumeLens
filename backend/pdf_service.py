@@ -42,7 +42,7 @@ async def extract_pdf_text(file: UploadFile = File(...)):
     except Exception as e:
         raise HTTPException(
             status_code=500, 
-            detail=f"PDF extraction failed: {str(e)}"
+            detail="Unable to extract text from the PDF. Please ensure the PDF is not password-protected and contains readable text. Try converting it to a different format or re-uploading."
         )
 
 @pdf_router.get("/pdf_health_check")
