@@ -272,7 +272,7 @@ uvicorn main:app --reload --host 0.0.0.0 --port 8000 # available at localhost:80
 ### Milestones 3 & 4 (Weeks 4-5)
 
 - [x] Prompt adjustments
-- [ ] Error handling and edge cases
-- [ ] UI/UX refinements
-- [ ] Performance optimization
-- [ ] End-to-end testing
+- [x] Error handling and edge cases
+- [x] UI/UX refinements
+- [x] Performance optimization
+- [x] End-to-end testing
