@@ -154,46 +154,41 @@ fun DashboardScreen(
 
                     Spacer(Modifier.height(12.dp))
 
-                    // Graph: Hide if empty, show bars if data exists
-                    if (dashboardState.graphBars.isEmpty()) {
-                        // Empty state message
+                    // Enhanced Graph with color coding, Y-axis, and clickable bars
+                    if (dashboardState.graphBarData.isEmpty()) {
                         Box(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .height(120.dp)
+                                .height(160.dp)
                                 .padding(vertical = 8.dp),
                             contentAlignment = Alignment.Center
                         ) {
-                            Text(
-                                text = "Upload your resume to see activity here.",
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                fontSize = 14.sp,
-                                textAlign = TextAlign.Center
-                            )
-                        }
-                    } else {
-                        // Show bars
-                        //Citation- https://github.com/developerchunk/BarGraph-JetpackCompose
-                        // Citation- https://stackoverflow.com/questions/66955541/create-list-of-lists-in-ktlin
-                        Row(
-                            horizontalArrangement = Arrangement.spacedBy(6.dp),
-                            verticalAlignment = Alignment.Bottom,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(120.dp)
-                                .padding(vertical = 8.dp)
-                        ) {
-                            dashboardState.graphBars.forEach { score ->
+                            Card(
+                                shape = RoundedCornerShape(12.dp),
+                                colors = CardDefaults.cardColors(containerColor = Color(0xFFFAFAFA)),
+                                modifier = Modifier.fillMaxSize()
+                            ) {
                                 Box(
-                                    modifier = Modifier
-                                        .weight(1f)
-                                        .height(maxOf(score.coerceIn(0, 100), 4).dp)
-                                        .clip(RoundedCornerShape(3.dp))
-                                        .background(MaterialTheme.colorScheme.primary)
-                                )
-
+                                    modifier = Modifier.fillMaxSize(),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Text(
+                                        text = "Upload your resume to see activity here.",
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        fontSize = 14.sp,
+                                        textAlign = TextAlign.Center
+                                    )
+                                }
                             }
                         }
+                    } else {
+                        EnhancedResumeGraph(
+                            barData = dashboardState.graphBarData,
+                            onBarClick = { analysisId ->
+                                onNavigateToResumeAnalysis(analysisId)
+                            },
+                            modifier = Modifier.padding(vertical = 8.dp)
+                        )
                     }
 
                     Spacer(Modifier.height(12.dp))
@@ -463,6 +458,134 @@ private fun ResumeHistoryItem(
                 "$corrections Corrections, $suggestions Suggestions",
                 color = Color.Gray,
                 fontSize = 14.sp
+            )
+        }
+    }
+}
+
+@Composable
+private fun EnhancedResumeGraph(
+    barData: List<com.cs407.resumelens.data.GraphBarData>,
+    onBarClick: (String) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Card(
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(containerColor = Color(0xFFFAFAFA)),
+        modifier = modifier
+            .fillMaxWidth()
+            .height(160.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(12.dp)
+        ) {
+            // Y-axis labels
+            YAxisLabels(modifier = Modifier.width(28.dp))
+
+            Spacer(modifier = Modifier.width(8.dp))
+
+            // Bar graph
+            BarGraphContent(
+                barData = barData,
+                onBarClick = onBarClick,
+                modifier = Modifier.weight(1f)
+            )
+        }
+    }
+}
+
+@Composable
+private fun YAxisLabels(modifier: Modifier = Modifier) {
+    Column(
+        modifier = modifier.fillMaxHeight(),
+        verticalArrangement = Arrangement.SpaceBetween
+    ) {
+        listOf(100, 75, 50, 25, 0).forEach { value ->
+            Text(
+                text = "$value",
+                fontSize = 10.sp,
+                color = Color(0xFF757575),
+                modifier = Modifier.padding(end = 4.dp)
+            )
+        }
+    }
+}
+
+@Composable
+private fun BarGraphContent(
+    barData: List<com.cs407.resumelens.data.GraphBarData>,
+    onBarClick: (String) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Column(modifier = modifier.fillMaxHeight()) {
+        // Graph area
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(4.dp),
+            verticalAlignment = Alignment.Bottom,
+            modifier = Modifier
+                .fillMaxWidth()
+                .weight(1f)
+        ) {
+            barData.forEach { data ->
+                GraphBar(
+                    score = data.score,
+                    onClick = { onBarClick(data.analysisId) },
+                    modifier = Modifier.weight(1f)
+                )
+            }
+        }
+
+        // X-axis line
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(1.dp)
+                .background(Color(0xFFE0E0E0))
+        )
+    }
+}
+
+@Composable
+private fun GraphBar(
+    score: Int,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val barColor = when {
+        score >= 80 -> Color(0xFF3CB371) // High - green
+        score >= 50 -> Color(0xFF91D0AC) // Medium - soft green
+        else -> Color(0xFF9E9E9E)        // Low - gray
+    }
+
+    Column(
+        modifier = modifier.fillMaxHeight(),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        // Score label above bar
+        Text(
+            text = "$score",
+            fontSize = 11.sp,
+            fontWeight = FontWeight.SemiBold,
+            color = barColor,
+            modifier = Modifier.padding(bottom = 2.dp)
+        )
+
+        // Bar
+        Box(
+            modifier = Modifier
+                .weight(1f)
+                .fillMaxWidth()
+                .clickable(onClick = onClick)
+        ) {
+            Box(
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .fillMaxWidth()
+                    .fillMaxHeight(fraction = score / 100f)
+                    .clip(RoundedCornerShape(topStart = 4.dp, topEnd = 4.dp))
+                    .background(barColor)
             )
         }
     }
