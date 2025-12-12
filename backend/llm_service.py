@@ -248,7 +248,14 @@ def openai_health_check():
 
 @gemini_router.post("/analyze", response_model=AnalysisResponse)
 async def analyze_resume(payload: AnalysisRequest):
-    configure_gemini()
+    try:
+        configure_gemini()
+    except RuntimeError:
+        # Return user-friendly error for configuration issues
+        raise HTTPException(
+            status_code=500,
+            detail="The analysis service is temporarily unavailable. Please try again later."
+        )
     
     # build a generative model
     try:
@@ -257,8 +264,8 @@ async def analyze_resume(payload: AnalysisRequest):
         response = model.generate_content(prompt)
     except Exception as e:
         raise HTTPException(
-            status_code=502,
-            detail=f"Gemini request failed: {e}"
+            status_code=500,
+            detail="Unable to analyze your resume at this time. Please try again in a few moments."
         )
 
     llm_response = parse_response(response)
@@ -267,6 +274,6 @@ async def analyze_resume(payload: AnalysisRequest):
         return AnalysisResponse(**llm_response)
     except ValidationError as eexc:
         raise HTTPException(
-            status_code=502,
-            detail=f"Gemini response failed validation: {e}"
+            status_code=500,
+            detail="Unable to process the resume analysis. The resume may be incomplete or corrupted. Please try uploading a clear, complete resume."
         )

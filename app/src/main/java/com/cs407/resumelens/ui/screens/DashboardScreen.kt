@@ -28,6 +28,7 @@ import com.cs407.resumelens.data.UserViewModel
 import com.cs407.resumelens.ui.components.ProfileMenu
 import kotlinx.coroutines.launch
 import androidx.compose.material3.ModalDrawerSheet
+import androidx.compose.ui.text.style.TextAlign
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -140,12 +141,16 @@ fun DashboardScreen(
                             .padding(horizontal = 20.dp, vertical = 10.dp)
                     ) {
 
-                        Text("Total Resume Edits", fontSize = 16.sp, color = Color.Gray)
-                    Text(
-                        text = "${dashboardState.totalEdits}",
-                        fontSize = 40.sp,
-                        fontWeight = FontWeight.Bold
-                    )
+                        Text("Total Resume Edits", fontSize = 16.sp,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant)
+
+                        Text(
+                            text = "${dashboardState.totalEdits}",
+                            fontSize = 40.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+
 
                     Spacer(Modifier.height(12.dp))
 
@@ -169,9 +174,9 @@ fun DashboardScreen(
                                 ) {
                                     Text(
                                         text = "Upload your resume to see activity here.",
-                                        color = Color.Gray,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                                         fontSize = 14.sp,
-                                        textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                                        textAlign = TextAlign.Center
                                     )
                                 }
                             }
@@ -275,13 +280,13 @@ private fun ProfileSidebar(
     onClose: () -> Unit = {},
     onNavigateToSettings: () -> Unit = {}
 ) {
-        Column(
-            modifier = Modifier
-                .width(320.dp)
-                .fillMaxHeight()
-                .background(Color.White)
-                .padding(24.dp)
-        ) {
+    Column(
+        modifier = Modifier
+            .width(320.dp)
+            .fillMaxHeight()
+            .background(MaterialTheme.colorScheme.surface)
+            .padding(24.dp)
+    ) {
             // Close button
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -291,7 +296,7 @@ private fun ProfileSidebar(
                     Icon(
                         painter = painterResource(id = R.drawable.back_button),
                         contentDescription = "Close",
-                        tint = Color.Black
+                        tint = MaterialTheme.colorScheme.onSurface
                     )
                 }
             }
@@ -321,9 +326,10 @@ private fun ProfileSidebar(
                     )
                 }
                 Spacer(Modifier.height(8.dp))
-                Text(userName, fontWeight = FontWeight.Bold, fontSize = 20.sp)
+                Text(userName, fontWeight = FontWeight.Bold, fontSize = 20.sp,
+                    color = MaterialTheme.colorScheme.onSurface)
                 if (username.isNotBlank()) {
-                    Text("@$username", color = Color.Gray, fontSize = 14.sp)
+                    Text("@$username", color = MaterialTheme.colorScheme.onSurfaceVariant)
                 } else {
                     Text("Premium account", color = Color.Gray, fontSize = 14.sp)
                 }
@@ -342,13 +348,13 @@ private fun ProfileSidebar(
 
             Text("Achievements", fontWeight = FontWeight.Bold, fontSize = 18.sp)
             Spacer(Modifier.height(12.dp))
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(8.dp))
-                    .background(Color(0xFFF2F2F2))
-                    .padding(16.dp)
-            ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(8.dp))
+                .background(MaterialTheme.colorScheme.surfaceVariant)
+                .padding(16.dp)
+        ) {
                 Text("Quantified Impact", fontWeight = FontWeight.SemiBold)
                 Text(
                     "Add measurable results to 5+ bullet points",
@@ -364,14 +370,14 @@ private fun ProfileSidebar(
                             .height(6.dp)
                             .width(150.dp)
                             .clip(RoundedCornerShape(3.dp))
-                            .background(Color.LightGray)
+                            .background(MaterialTheme.colorScheme.outlineVariant)
                     ) {
                         Box(
                             modifier = Modifier
                                 .fillMaxHeight()
                                 .width(30.dp)
                                 .clip(RoundedCornerShape(3.dp))
-                                .background(Color.Black)
+                                .background(MaterialTheme.colorScheme.primary)
                         )
                     }
                     Spacer(Modifier.width(8.dp))
@@ -381,13 +387,16 @@ private fun ProfileSidebar(
 
             Spacer(Modifier.height(24.dp))
 
-            Button(
-                onClick = onNavigateToSettings,
-                modifier = Modifier.fillMaxWidth(),
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF00B67A))
-            ) {
-                Text("Settings", color = Color.White)
-            }
+        Button(
+            onClick = onNavigateToSettings,
+            modifier = Modifier.fillMaxWidth(),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = MaterialTheme.colorScheme.primary
+            )
+        ) {
+            Text("Settings", color = MaterialTheme.colorScheme.onPrimary)
+        }
+
         }
     }
 

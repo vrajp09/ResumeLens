@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -39,7 +40,7 @@ fun ProfileScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.White)
+            .background(MaterialTheme.colorScheme.background)
             .padding(horizontal = 24.dp, vertical = 16.dp)
     ) {
         Row(
@@ -53,7 +54,7 @@ fun ProfileScreen(
                 Icon(
                     painter = painterResource(id = R.drawable.back_button),
                     contentDescription = "Back",
-                    tint = Color.Black,
+                    tint = MaterialTheme.colorScheme.onSurface,
                     modifier = Modifier.size(28.dp)
                 )
             }
@@ -62,7 +63,7 @@ fun ProfileScreen(
                 Icon(
                     painter = painterResource(id = R.drawable.settings_icon),
                     contentDescription = "Settings",
-                    tint = Color.Black,
+                    tint = MaterialTheme.colorScheme.onSurface,
                     modifier = Modifier.size(28.dp)
                 )
             }
@@ -121,7 +122,7 @@ fun ProfileScreen(
             modifier = Modifier
                 .fillMaxWidth()
                 .clip(RoundedCornerShape(8.dp))
-                .background(Color(0xFFF2F2F2))
+                .background(MaterialTheme.colorScheme.surfaceVariant)
                 .padding(16.dp)
         ) {
             Text("Quantified Impact", fontWeight = FontWeight.SemiBold)
@@ -159,7 +160,7 @@ fun ProfileScreen(
 @Composable
 private fun InfoItem(label: String, value: String) {
     Column(Modifier.padding(vertical = 4.dp)) {
-        Text(label, color = Color.Gray, fontSize = 14.sp)
-        Text(value, fontSize = 16.sp, fontWeight = FontWeight.Medium)
+        Text(label, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Text(value, color = MaterialTheme.colorScheme.onSurface)
     }
 }

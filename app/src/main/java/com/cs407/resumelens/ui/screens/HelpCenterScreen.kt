@@ -20,7 +20,11 @@ fun HelpCenterScreen(onBack: () -> Unit) {
                 title = { Text("Help Center", fontWeight = FontWeight.Bold) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(painterResource(id = R.drawable.back_button), contentDescription = "Back")
+                        Icon(
+                            painterResource(id = R.drawable.back_button),
+                            contentDescription = "Back",
+                            tint = MaterialTheme.colorScheme.onSurface
+                        )
                     }
                 }
             )
@@ -68,7 +72,11 @@ private fun FAQItem(question: String, answer: String) {
     Column(modifier = Modifier.padding(vertical = 8.dp)) {
         Text(question, fontWeight = FontWeight.Bold, fontSize = 16.sp)
         Spacer(modifier = Modifier.height(4.dp))
-        Text(answer, fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Text(
+            answer,
+            fontSize = 14.sp,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
         Divider(modifier = Modifier.padding(top = 12.dp))
     }
 }
